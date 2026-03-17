@@ -38,187 +38,34 @@
 
 **T015**: Create .env file by copying .env.example (gitignored runtime config). **Done**: [X]
 
----
+**T016**: Create vault/Dashboard.md template. **Done**: [X]
 
-### T016: Create vault/Dashboard.md
+**T017**: Create vault/Company_Handbook.md template. **Done**: [X]
 
-**Context**: FTE-Agent uses Dashboard.md as the main status display for the AI employee. It shows system status, pending items, and recent activity.
+**T018**: Initialize Git Repository (root level). **Done**: [X]
 
-**Task**: Create `vault/Dashboard.md` with placeholder content.
-
-**Instructions**:
-1. Create file `FTE/vault/Dashboard.md`
-2. Add header and placeholder sections
-
-**File**: `FTE/vault/Dashboard.md`
-
-**Content**:
-```markdown
-# AI Employee Dashboard
-
-## System Status
-- **Mode**: DEV_MODE (Safe)
-- **Last Check**: [Timestamp]
-- **Pending Items**: [Count from Needs_Action/]
-- **Watcher Status**: [Running/Stopped]
-
-## Recent Activity
-[Last 10 audit log entries will appear here]
-
-## Quick Actions
-- Drop file in `/Inbox/` to trigger processing
-- Check `/Logs/` for audit trail
-- Review `/Pending_Approval/` for items needing approval
-```
-
-**Why This File**:
-- Main status display for AI employee
-- Updated by orchestrator
-- User-facing dashboard
-
-**Verification**:
-```bash
-cat vault/Dashboard.md
-# Should show dashboard structure
-```
-
-**Status**: [ ]
+**T019**: Create Initial Commit (root level). **Done**: [X]
 
 ---
 
-### T017: Create vault/Company_Handbook.md
+### ✅ T016-T019 Completed (2026-03-17)
 
-**Context**: FTE-Agent uses Company_Handbook.md to store rules of engagement for the AI employee. This guides AI behavior and decision-making.
+**Summary**: Created vault templates and initialized version control.
 
-**Task**: Create `vault/Company_Handbook.md` with placeholder content.
+**Files Created**:
+- `FTE/vault/Dashboard.md` - AI employee status dashboard
+- `FTE/vault/Company_Handbook.md` - Rules of engagement
 
-**Instructions**:
-1. Create file `FTE/vault/Company_Handbook.md`
-2. Add header and "Rules of Engagement" section
+**Git Setup**:
+- Root repository: `FTE-Agent/` (single repo, no nested FTE/.git)
+- Initial commit: `409a8c6` - "Add FTE vault templates and fix spec ambiguities"
+- Tracked: Vault templates (Dashboard.md, Company_Handbook.md)
+- Excluded: User data (Inbox/, Needs_Action/, Done/, Logs/, .env)
 
-**File**: `FTE/vault/Company_Handbook.md`
-
-**Content**:
-```markdown
-# Company Handbook
-
-## Rules of Engagement
-
-### Security Rules
-1. Always check DEV_MODE before any action
-2. Always respect --dry-run flag
-3. Never access files outside vault/
-4. Always log all actions to /Logs/
-
-### Escalation Rules
-1. Payment-related actions → Require human approval
-2. External API calls → Require human approval
-3. File deletions → Require human approval
-4. Any action with uncertainty → Create approval request
-
-### Contact Priority
-1. Critical errors → Create alert file in Needs_Action/
-2. Questions → Log and continue
-3. Completion → Move to Done/ and log
-
-## Emergency Procedures
-- To stop all operations: Create `vault/STOP` file
-- To review audit trail: Check `vault/Logs/`
-```
-
-**Why This File**:
-- Guides AI employee behavior
-- Defines escalation thresholds
-- Emergency procedures reference
-
-**Verification**:
-```bash
-cat vault/Company_Handbook.md
-# Should show handbook structure
-```
-
-**Status**: [ ]
-
----
-
-### T018: Initialize Git Repository
-
-**Context**: FTE-Agent uses git for version control. We need to initialize the repository to track changes.
-
-**Task**: Initialize git repository in `FTE/` directory.
-
-**Instructions**:
-1. Ensure you're in `FTE/` directory
-2. Run `git init`
-3. This creates `.git/` directory for version control
-
-**Commands**:
-```bash
-cd FTE
-git init
-```
-
-**Expected Output**:
-```
-Initialized empty Git repository in /path/to/FTE/.git/
-```
-
-**Verification**:
-```bash
-git status
-# Should show "No commits yet" with untracked files
-```
-
-**Status**: [ ]
-
----
-
-### T019: Create Initial Commit
-
-**Context**: We've created the project structure. Now we commit this baseline to git for version tracking.
-
-**Task**: Create initial commit with all project structure files.
-
-**Instructions**:
-1. Add all files to git staging
-2. Create commit with descriptive message
-
-**Commands**:
-```bash
-git add .
-git commit -m "Initial project structure for File System Watcher (Bronze P1)
-
-- Project structure: src/, tests/, vault/
-- Configuration: pyproject.toml, .env, .gitignore
-- Tool configs: ruff, black, mypy, bandit, isort
-- Vault structure: Inbox/, Needs_Action/, Done/, Logs/, etc.
-- Dashboard and Handbook placeholders"
-```
-
-**Expected Output**:
-```
-[main (root-commit) abc1234] Initial project structure...
- 10 files changed, 200 insertions(+)
-```
-
-**Verification**:
-```bash
-git log --oneline
-# Should show initial commit
-git status
-# Should show "nothing to commit, working tree clean"
-```
-
-**Status**: [ ]
-
----
-
-**Phase 0 Checkpoint**: Run `uv sync` and verify 0 errors
-
-```bash
-cd FTE && uv sync
-# Should install all dependencies with 0 errors
-```
+**Spec Updates**:
+- Fixed CHK056: Added 24-hour downtime window for watcher restart
+- Fixed CHK058: Defined Alert File format with YAML frontmatter
+- Checklist status: 63/63 PASS (100%)
 
 ---
 
