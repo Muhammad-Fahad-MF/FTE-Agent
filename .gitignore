@@ -1,0 +1,209 @@
+# ===========================================
+# FTE-Agent Root .gitignore
+# ===========================================
+
+# --- Python Artifacts ---
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- Virtual Environments ---
+.venv/
+venv/
+ENV/
+env/
+.conda/
+
+# --- Environment Variables (SECRETS) ---
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+
+# --- IDE / Editor ---
+# JetBrains (PyCharm, IntelliJ, etc.)
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.SavedSearchHistory
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# PyCharm
+*.pyc
+__pycache__/
+
+# --- Testing & Coverage ---
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# --- Type Checking ---
+.mypy_cache/
+.pytype/
+
+# --- Documentation ---
+# Sphinx
+docs/_build/
+docs/.doctrees/
+
+# MkDocs
+site/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# --- OS Generated Files ---
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.Trash-*
+.nfs*
+
+# --- Logs ---
+logs/
+*.log
+Logs/
+
+# --- Data & User Content ---
+# Vault data (user data, not code)
+vault/
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Build & CI/CD ---
+.cache/
+.husky/
+*.bak
+*.tmp
+*.temp
+
+# --- Qwen Code / AI Tools ---
+.qwen/
+*.prompt.md
+
+# --- Spec-Driven Development ---
+# Keep specs and history, ignore temp files
+*.tmp.md
+*.backup.md
+
+# --- Secrets & Credentials ---
+# Never commit these
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets.json
+credentials.json
+service-account.json
+
+# --- Node Modules (if using any JS tooling) ---
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# --- Terraform ---
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# --- Docker ---
+docker-compose.override.yml
+
+# --- Miscellaneous ---
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Large files (prevent accidental commits)
+*.iso
+*.dmg
+*.exe
+*.dll
+*.bin
+
+# --- Keep these (exceptions) ---
+# !.gitkeep
+# !docs/
+# !specs/
+# !history/
