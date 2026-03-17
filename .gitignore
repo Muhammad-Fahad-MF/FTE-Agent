@@ -162,14 +162,13 @@ FTE/.env.local
 *.tmp
 *.temp
 
-# --- Qwen Code / AI Tools ---
-.qwen/
-*.prompt.md
-
 # --- Spec-Driven Development ---
 # Keep specs and history, ignore temp files
 *.tmp.md
 *.backup.md
+
+# --- Qwen Code / AI Tools ---
+.qwen/
 
 # --- Secrets & Credentials ---
 # Never commit these
@@ -218,4 +217,4 @@ temp/
 # !.gitkeep
 # !docs/
 # !specs/
-# !history/
+!history/
