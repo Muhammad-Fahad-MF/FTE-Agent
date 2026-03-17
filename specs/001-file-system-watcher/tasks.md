@@ -71,205 +71,34 @@
 
 ## Phase 1: User Story 1 - Detect and Process New Files (P1 - MVP) (T020-T055)
 
-### T020: Create test_base_watcher_contract.py Test File
+### ✅ T020-T023 Completed (2026-03-17)
 
-**Context**: We are implementing File System Watcher for FTE-Agent using test-first approach (TDD). Contract tests verify that our classes have correct interfaces (methods, parameters, return types).
+**Summary**: Created contract tests for BaseWatcher interface and implemented base classes.
 
-**Task**: Create contract test file for BaseWatcher class.
+**Test File Created**:
+- `FTE/tests/contract/test_base_watcher_contract.py` - 4 contract tests
 
-**Instructions**:
-1. Create file `FTE/tests/contract/test_base_watcher_contract.py`
-2. Add pytest import and docstring
-3. Add TestBaseWatcherContract class with 4 test methods
+**Tests Implemented**:
+- `test_watcher_interface()` - Verifies FileSystemWatcher inherits from BaseWatcher
+- `test_watcher_initialization()` - Verifies `__init__` accepts vault_path, dry_run, interval
+- `test_check_for_updates_signature()` - Verifies `check_for_updates()` returns `list[Path]`
+- `test_create_action_file_signature()` - Verifies `create_action_file()` returns `Path`
 
-**File**: `FTE/tests/contract/test_base_watcher_contract.py`
+**Source Files Created**:
+- `FTE/src/base_watcher.py` - Abstract base class with common interface
+- `FTE/src/filesystem_watcher.py` - Concrete implementation (stub methods)
+- `FTE/src/__init__.py` - Package init file
 
-**Content**:
-```python
-"""Contract tests for BaseWatcher and FileSystemWatcher classes.
+**Test Results**: 4/4 passed ✅
 
-These tests verify that the classes have correct interfaces:
-- Method signatures
-- Parameter names and types
-- Return types
-- Inheritance relationships
-"""
-
-import pytest
-from pathlib import Path
-
-
-class TestBaseWatcherContract:
-    """Contract tests for BaseWatcher abstract class."""
-
-    def test_watcher_interface(self):
-        """Verify FileSystemWatcher inherits from BaseWatcher."""
-        # TODO: Import and verify inheritance
-        # Expected: FileSystemWatcher is subclass of BaseWatcher
-        pass
-
-    def test_watcher_initialization(self):
-        """Verify __init__ accepts vault_path, dry_run, interval parameters."""
-        # TODO: Test constructor signature
-        # Expected: __init__(vault_path, dry_run=False, interval=60)
-        pass
-
-    def test_check_for_updates_signature(self):
-        """Verify check_for_updates() returns list[Path]."""
-        # TODO: Test method signature
-        # Expected: def check_for_updates(self) -> list[Path]
-        pass
-
-    def test_create_action_file_signature(self):
-        """Verify create_action_file() returns Path."""
-        # TODO: Test method signature
-        # Expected: def create_action_file(self, file_path: Path) -> Path
-        pass
-```
-
-**Verification**:
 ```bash
 cd FTE && pytest tests/contract/test_base_watcher_contract.py -v
-```
-
-**Status**: [ ]
-
----
-
-### T021: Write test_watcher_interface() Test
-
-**Context**: Contract tests verify FileSystemWatcher inherits from BaseWatcher. This ensures proper class hierarchy.
-
-**Task**: Implement test_watcher_interface() to verify inheritance.
-
-**Instructions**:
-1. Open `FTE/tests/contract/test_base_watcher_contract.py`
-2. Replace test_watcher_interface() pass with actual test
-3. Import FileSystemWatcher and BaseWatcher from src
-4. Use issubclass() to verify inheritance
-
-**File**: `FTE/tests/contract/test_base_watcher_contract.py`
-
-**Update test_watcher_interface()**:
-```python
-    def test_watcher_interface(self):
-        """Verify FileSystemWatcher inherits from BaseWatcher."""
-        from src.base_watcher import BaseWatcher
-        from src.filesystem_watcher import FileSystemWatcher
-        
-        assert issubclass(FileSystemWatcher, BaseWatcher)
-```
-
-**Verification**:
-```bash
-cd FTE && pytest tests/contract/test_base_watcher_contract.py::TestBaseWatcherContract::test_watcher_interface -v
+# 4 passed in 0.13s
 ```
 
 ---
 
-### T022: Write test_watcher_initialization() Test
-
-**Context**: Contract tests verify BaseWatcher.__init__() accepts correct parameters.
-
-**Task**: Implement test_watcher_initialization() to verify constructor signature.
-
-**Instructions**:
-1. Open `FTE/tests/contract/test_base_watcher_contract.py`
-2. Replace test_watcher_initialization() pass with actual test
-3. Test that __init__ accepts vault_path, dry_run, interval
-
-**File**: `FTE/tests/contract/test_base_watcher_contract.py`
-
-**Update test_watcher_initialization()**:
-```python
-    def test_watcher_initialization(self):
-        """Verify __init__ accepts vault_path, dry_run, interval parameters."""
-        import inspect
-        from src.base_watcher import BaseWatcher
-        
-        sig = inspect.signature(BaseWatcher.__init__)
-        params = list(sig.parameters.keys())
-        
-        # Should have self, vault_path, dry_run, interval
-        assert 'vault_path' in params
-        assert 'dry_run' in params
-        assert 'interval' in params
-```
-
-**Verification**:
-```bash
-cd FTE && pytest tests/contract/test_base_watcher_contract.py::TestBaseWatcherContract::test_watcher_initialization -v
-```
-
----
-
-### T023: Write test_check_for_updates_signature() Test
-
-**Context**: Contract tests verify check_for_updates() method signature.
-
-**Task**: Implement test to verify check_for_updates() returns list[Path].
-
-**Instructions**:
-1. Open `FTE/tests/contract/test_base_watcher_contract.py`
-2. Replace test_check_for_updates_signature() pass with actual test
-3. Use inspect to verify return annotation
-
-**File**: `FTE/tests/contract/test_base_watcher_contract.py`
-
-**Update test_check_for_updates_signature()**:
-```python
-    def test_check_for_updates_signature(self):
-        """Verify check_for_updates() returns list[Path]."""
-        import inspect
-        from pathlib import Path
-        from src.base_watcher import BaseWatcher
-        
-        sig = inspect.signature(BaseWatcher.check_for_updates)
-        return_annotation = sig.return_annotation
-        
-        # Should return list[Path]
-        assert return_annotation == list[Path]
-```
-
-**Verification**:
-```bash
-cd FTE && pytest tests/contract/test_base_watcher_contract.py::TestBaseWatcherContract::test_check_for_updates_signature -v
-```
-
----
-
-### T024: Write test_create_action_file_signature() Test
-
-**Context**: Contract tests verify create_action_file() method signature.
-
-**Task**: Implement test to verify create_action_file() returns Path.
-
-**Instructions**:
-1. Open `FTE/tests/contract/test_base_watcher_contract.py`
-2. Replace test_create_action_file_signature() pass with actual test
-3. Use inspect to verify return annotation
-
-**File**: `FTE/tests/contract/test_base_watcher_contract.py`
-
-**Update test_create_action_file_signature()**:
-```python
-    def test_create_action_file_signature(self):
-        """Verify create_action_file() returns Path."""
-        import inspect
-        from pathlib import Path
-        from src.base_watcher import BaseWatcher
-        
-        sig = inspect.signature(BaseWatcher.create_action_file)
-        return_annotation = sig.return_annotation
-        
-        # Should return Path
-        assert return_annotation == Path
-```
-
-**Verification**:
-```bash
-cd FTE && pytest tests/contract/test_base_watcher_contract.py::TestBaseWatcherContract::test_create_action_file_signature -v
-```
+**Status**: [X] (Contract test implemented - see T020-T023 summary)
 
 ---
 
