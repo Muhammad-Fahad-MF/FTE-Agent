@@ -93,7 +93,7 @@ Automated file detection eliminates manual steps, ensures no files are missed, a
 3. **Permission Denied**: WHEN watcher encounters PermissionError reading a file, THEN error is logged with full stack trace, file is skipped, and watcher continues monitoring
 4. **Disk Full**: WHEN watcher encounters DiskFullError (OSError with errno 28), THEN error is logged at CRITICAL level, watcher halts gracefully, and alert file is created in vault/Needs_Action/
 5. **Corrupt Action File**: WHEN action file creation writes partial content due to interruption, THEN on restart watcher detects incomplete file (missing closing ---), logs WARNING, and recreates the file
-6. **Watcher Restart**: WHEN watcher restarts after crash (within 24 hours), THEN it re-scans Inbox/ for files with modification time during downtime and processes missed files. Files older than 24 hours are logged at WARNING level and skipped
+6. **Watcher Restart**: WHEN watcher restarts after crash (within 24 hours), THEN it re-scans Inbox/ for files with modification time during downtime (up to 24 hours) and processes missed files. Files older than 24 hours are logged at WARNING level with message "File modification time exceeds 24-hour window" and skipped (remain in Inbox/ for manual review)
 7. **Missing Log Directory**: WHEN vault/Logs/ directory is missing, THEN watcher creates it automatically before first log write
 
 ---
@@ -119,7 +119,7 @@ Automated file detection eliminates manual steps, ensures no files are missed, a
 ### Key Entities
 
 - **Action File**: Markdown file in vault/Needs_Action/ representing a detected file requiring processing. Contains YAML frontmatter (type, source, created, status) and optional content section. Named as: `FILE_<original_filename>_<timestamp>.md`
-- **Alert File**: Special action file created for critical errors (DiskFullError, security incidents). Format: `ALERT_<error_type>_<timestamp>.md`. Contains YAML frontmatter (type, severity, created, details) and error context. Location: vault/Needs_Action/
+- **Alert File**: Special action file created for critical errors (DiskFullError, security incidents, >5 errors/minute). Format: `ALERT_<error_type>_<timestamp>.md` (e.g., `ALERT_disk_full_20260307103000.md`). Location: `vault/Needs_Action/`. Contains YAML frontmatter: `type: alert`, `severity: critical|high|medium`, `error_type: <error_name>`, `created: <ISO-8601>`, `details: <error_context>`. Content section includes error message, stack trace (if available), and recommended actions.
 - **Audit Log Entry**: JSON object written to vault/Logs/audit_YYYY-MM-DD.jsonl. Contains: timestamp, level, component, action, dry_run, correlation_id, details. One entry per line (JSONL format).
 - **Processed File Record**: In-memory tracking of files already processed. Key: path+modified_time hash. Value: action_file_path. Cleared on watcher restart.
 - **STOP File**: Special file (vault/STOP) that signals watcher to halt. Presence checked every 60 seconds. Created by user for emergency stop.

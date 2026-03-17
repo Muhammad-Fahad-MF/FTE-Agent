@@ -138,10 +138,22 @@ Logs/
 
 # --- Data & User Content ---
 # Vault data (user data, not code)
-vault/
+# FTE/vault/ subdirectories with user-generated content
+FTE/vault/Inbox/
+FTE/vault/Needs_Action/
+FTE/vault/Done/
+FTE/vault/Pending_Approval/
+FTE/vault/Approved/
+FTE/vault/Rejected/
+FTE/vault/Logs/
+FTE/vault/*.archived
 *.db
 *.sqlite
 *.sqlite3
+
+# FTE runtime files (gitignored, not code)
+FTE/.env
+FTE/.env.local
 
 # --- Build & CI/CD ---
 .cache/

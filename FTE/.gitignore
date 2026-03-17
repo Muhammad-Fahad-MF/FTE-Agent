@@ -17,7 +17,15 @@ Logs/
 *.log
 
 # Vault data (user data, not code)
-vault/
+# Keep template files, exclude user-generated content
+vault/Inbox/
+vault/Needs_Action/
+vault/Done/
+vault/Pending_Approval/
+vault/Approved/
+vault/Rejected/
+vault/Logs/
+vault/*.archived
 
 # Testing
 .pytest_cache/
