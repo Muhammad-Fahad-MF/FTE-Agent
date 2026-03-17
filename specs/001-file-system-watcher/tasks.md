@@ -71,7 +71,7 @@
 
 ## Phase 1: User Story 1 - Detect and Process New Files (P1 - MVP) (T020-T055)
 
-### ✅ T020-T023 Completed (2026-03-17)
+### ✅ T020-T024 Completed (2026-03-17)
 
 **Summary**: Created contract tests for BaseWatcher interface and implemented base classes.
 
@@ -79,10 +79,10 @@
 - `FTE/tests/contract/test_base_watcher_contract.py` - 4 contract tests
 
 **Tests Implemented**:
-- `test_watcher_interface()` - Verifies FileSystemWatcher inherits from BaseWatcher
-- `test_watcher_initialization()` - Verifies `__init__` accepts vault_path, dry_run, interval
-- `test_check_for_updates_signature()` - Verifies `check_for_updates()` returns `list[Path]`
-- `test_create_action_file_signature()` - Verifies `create_action_file()` returns `Path`
+- `test_watcher_interface()` (T021) - Verifies FileSystemWatcher inherits from BaseWatcher
+- `test_watcher_initialization()` (T022) - Verifies `__init__` accepts vault_path, dry_run, interval
+- `test_check_for_updates_signature()` (T023) - Verifies `check_for_updates()` returns `list[Path]`
+- `test_create_action_file_signature()` (T024) - Verifies `create_action_file()` returns `Path`
 
 **Source Files Created**:
 - `FTE/src/base_watcher.py` - Abstract base class with common interface
@@ -93,16 +93,12 @@
 
 ```bash
 cd FTE && pytest tests/contract/test_base_watcher_contract.py -v
-# 4 passed in 0.13s
+# 4 passed in 0.07s
 ```
 
 ---
 
-**Status**: [X] (Contract test implemented - see T020-T023 summary)
-
----
-
-### T025: Create test_audit_logger.py Test File
+## T025: Create test_audit_logger.py Test File
 
 **Context**: We are implementing AuditLogger class using TDD. First we create the test file with all test functions.
 
