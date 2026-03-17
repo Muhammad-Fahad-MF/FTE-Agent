@@ -98,239 +98,32 @@ cd FTE && pytest tests/contract/test_base_watcher_contract.py -v
 
 ---
 
-## T025: Create test_audit_logger.py Test File
+### ✅ T025-T029 Completed (2026-03-17)
 
-**Context**: We are implementing AuditLogger class using TDD. First we create the test file with all test functions.
+**Summary**: Created AuditLogger class with unit tests and FileSystemWatcher test file.
 
-**Task**: Create test file for AuditLogger unit tests.
+**Test Files Created**:
+- `FTE/tests/unit/test_audit_logger.py` - 3 unit tests (T025-T028)
+- `FTE/tests/unit/test_filesystem_watcher.py` - 4 test stubs (T029)
 
-**Instructions**:
-1. Create file `FTE/tests/unit/test_audit_logger.py`
-2. Add pytest import and docstring
-3. Add TestAuditLogger class with 3 test method stubs
+**Tests Implemented**:
+- `test_log_entry_schema()` (T026) - Verifies 7 required fields in log entries
+- `test_log_rotation()` (T027) - Verifies log rotation at 7 days
+- `test_error_logging_with_stack_trace()` (T028) - Verifies exception logging
 
-**File**: `FTE/tests/unit/test_audit_logger.py`
+**Source Files Created**:
+- `FTE/src/audit_logger.py` - Structured JSON logging with rotation
 
-**Content**:
-```python
-"""Unit tests for AuditLogger class."""
+**Test Results**: 7/7 passed ✅
 
-import pytest
-import json
-from pathlib import Path
-
-
-class TestAuditLogger:
-    """Unit tests for AuditLogger."""
-
-    def test_log_entry_schema(self):
-        """Verify log entry contains all 7 required fields."""
-        # TODO: Test that log entries have: timestamp, level, component, action, dry_run, correlation_id, details
-        pass
-
-    def test_log_rotation(self):
-        """Verify logs rotate at 7 days or 100MB."""
-        # TODO: Test log rotation logic
-        pass
-
-    def test_error_logging_with_stack_trace(self):
-        """Verify exceptions logged with exc_info=True."""
-        # TODO: Test error logging includes stack trace
-        pass
-```
-
-**Verification**:
 ```bash
-cd FTE && pytest tests/unit/test_audit_logger.py -v
+cd FTE && pytest tests/unit/test_audit_logger.py tests/unit/test_filesystem_watcher.py -v
+# 7 passed in 0.13s
 ```
 
 ---
 
-### T026: Write test_log_entry_schema() Test
-
-**Context**: AuditLogger must create log entries with exactly 7 fields for observability.
-
-**Task**: Implement test to verify log entry schema.
-
-**Instructions**:
-1. Open `FTE/tests/unit/test_audit_logger.py`
-2. Replace test_log_entry_schema() with full test
-3. Create AuditLogger instance
-4. Call log() method
-5. Verify all 7 fields present in log entry
-
-**File**: `FTE/tests/unit/test_audit_logger.py`
-
-**Update test_log_entry_schema()**:
-```python
-    def test_log_entry_schema(self, tmp_path):
-        """Verify log entry contains all 7 required fields."""
-        from src.audit_logger import AuditLogger
-        
-        # Create logger with temp directory
-        logger = AuditLogger(component="test", log_path=str(tmp_path))
-        
-        # Log a test entry
-        logger.log(level="INFO", action="test_action", details={"key": "value"})
-        
-        # Read log file
-        log_file = tmp_path / "audit_test.jsonl"
-        with open(log_file, 'r') as f:
-            entry = json.loads(f.readline())
-        
-        # Verify all 7 fields present
-        required_fields = ["timestamp", "level", "component", "action", "dry_run", "correlation_id", "details"]
-        for field in required_fields:
-            assert field in entry, f"Missing required field: {field}"
-```
-
-**Verification**:
-```bash
-cd FTE && pytest tests/unit/test_audit_logger.py::TestAuditLogger::test_log_entry_schema -v
-```
-
----
-
-### T027: Write test_log_rotation() Test
-
-**Context**: AuditLogger must rotate logs at 7 days or 100MB to prevent disk fill.
-
-**Task**: Implement test to verify log rotation logic.
-
-**Instructions**:
-1. Open `FTE/tests/unit/test_audit_logger.py`
-2. Replace test_log_rotation() with full test
-3. Test that rotate_logs() creates archived file
-
-**File**: `FTE/tests/unit/test_audit_logger.py`
-
-**Update test_log_rotation()**:
-```python
-    def test_log_rotation(self, tmp_path):
-        """Verify logs rotate at 7 days or 100MB."""
-        from src.audit_logger import AuditLogger
-        from datetime import datetime, timedelta
-        
-        # Create logger
-        logger = AuditLogger(component="test", log_path=str(tmp_path))
-        
-        # Create old log file (simulate 8 days old)
-        log_file = tmp_path / "audit_test.jsonl"
-        log_file.write_text("test content\n")
-        old_time = datetime.now() - timedelta(days=8)
-        
-        # Rotate logs
-        logger.rotate_logs(max_age_days=7)
-        
-        # Verify old log was archived
-        archived_files = list(tmp_path.glob("*.archived"))
-        assert len(archived_files) > 0 or not log_file.exists()
-```
-
-**Verification**:
-```bash
-cd FTE && pytest tests/unit/test_audit_logger.py::TestAuditLogger::test_log_rotation -v
-```
-
----
-
-### T028: Write test_error_logging_with_stack_trace() Test
-
-**Context**: AuditLogger must log exceptions with full stack traces for debugging.
-
-**Task**: Implement test to verify error logging includes stack traces.
-
-**Instructions**:
-1. Open `FTE/tests/unit/test_audit_logger.py`
-2. Replace test_error_logging_with_stack_trace() with full test
-3. Create an exception and log it
-4. Verify stack trace in log output
-
-**File**: `FTE/tests/unit/test_audit_logger.py`
-
-**Update test_error_logging_with_stack_trace()**:
-```python
-    def test_error_logging_with_stack_trace(self, tmp_path, caplog):
-        """Verify exceptions logged with exc_info=True."""
-        import logging
-        from src.audit_logger import AuditLogger
-        
-        # Create logger
-        logger = AuditLogger(component="test", log_path=str(tmp_path))
-        
-        # Create an exception
-        try:
-            raise ValueError("Test error")
-        except Exception as e:
-            logger.error(action="test_error", details={"error": str(e)}, exc=e)
-        
-        # Verify log file contains error
-        log_file = tmp_path / "audit_test.jsonl"
-        content = log_file.read_text()
-        assert "test_error" in content
-        assert "ValueError" in content or "Test error" in content
-```
-
-**Verification**:
-```bash
-cd FTE && pytest tests/unit/test_audit_logger.py::TestAuditLogger::test_error_logging_with_stack_trace -v
-```
-
----
-
-### T029: Create test_filesystem_watcher.py Test File
-
-**Context**: We are implementing FileSystemWatcher class using TDD. First we create the test file.
-
-**Task**: Create test file for FileSystemWatcher unit tests.
-
-**Instructions**:
-1. Create file `FTE/tests/unit/test_filesystem_watcher.py`
-2. Add pytest import and docstring
-3. Add TestFileSystemWatcher class with 4 test method stubs
-
-**File**: `FTE/tests/unit/test_filesystem_watcher.py`
-
-**Content**:
-```python
-"""Unit tests for FileSystemWatcher class."""
-
-import pytest
-from pathlib import Path
-
-
-class TestFileSystemWatcher:
-    """Unit tests for FileSystemWatcher."""
-
-    def test_dev_mode_validation(self):
-        """Verify SystemExit with code 1 if DEV_MODE != 'true'."""
-        # TODO: Test that watcher exits if DEV_MODE is not set
-        pass
-
-    def test_path_validation_traversal_attempt(self):
-        """Verify ValueError raised for paths outside vault."""
-        # TODO: Test path traversal prevention
-        pass
-
-    def test_stop_file_detection(self):
-        """Verify watcher halts within 60 seconds of STOP file creation."""
-        # TODO: Test STOP file detection
-        pass
-
-    def test_dry_run_no_file_creation(self):
-        """Verify no action files created when dry_run=True."""
-        # TODO: Test dry-run mode
-        pass
-```
-
-**Verification**:
-```bash
-cd FTE && pytest tests/unit/test_filesystem_watcher.py -v
-```
-
----
-
-### T030: Write test_dev_mode_validation() Test
+## T030: Write test_dev_mode_validation() Test
 
 **Context**: FileSystemWatcher must validate DEV_MODE before starting (security requirement).
 
