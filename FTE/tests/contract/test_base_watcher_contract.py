@@ -48,6 +48,12 @@ class TestBaseWatcherContract:
 
     def test_create_action_file_signature(self):
         """Verify create_action_file() returns Path."""
-        # TODO: Test method signature
-        # Expected: def create_action_file(self, file_path: Path) -> Path
-        pass
+        import inspect
+        from pathlib import Path
+        from src.base_watcher import BaseWatcher
+
+        sig = inspect.signature(BaseWatcher.create_action_file)
+        return_annotation = sig.return_annotation
+
+        # Should return Path
+        assert return_annotation == Path
