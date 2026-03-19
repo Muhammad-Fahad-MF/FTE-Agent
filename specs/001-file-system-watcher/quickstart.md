@@ -48,6 +48,50 @@
 
 ---
 
+## Configuration
+
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| DEV_MODE | Yes | - | Must be "true" to run (security kill switch) |
+| DRY_RUN | No | false | If "true", log without executing |
+| VAULT_PATH | No | ./vault | Path to Obsidian vault |
+| WATCHER_INTERVAL | No | 60 | Check interval in seconds (max 60) |
+
+### CLI Flags
+
+```bash
+# Basic usage (uses env vars or defaults)
+python -m src.filesystem_watcher
+
+# Custom vault path
+python -m src.filesystem_watcher --vault-path /path/to/vault
+
+# Dry-run mode
+python -m src.filesystem_watcher --dry-run
+
+# Custom interval
+python -m src.filesystem_watcher --interval 30
+
+# Combined
+python -m src.filesystem_watcher --vault-path /path/to/vault --dry-run --interval 30
+```
+
+### Precedence
+
+CLI flags > Environment variables > Defaults
+
+Example:
+```bash
+# Env says dry-run=false, CLI says --dry-run
+# Result: dry-run is enabled (CLI wins)
+set DRY_RUN=false
+python -m src.filesystem_watcher --dry-run
+```
+
+---
+
 ## Validation Scenarios
 
 ### Scenario 1: Happy Path - File Detection to Action Creation

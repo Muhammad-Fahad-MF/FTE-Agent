@@ -4,6 +4,58 @@
 
 This file configures the Spec-Driven Development workflow for the FTE-Agent project.
 
+---
+
+## Current Development Focus: Silver Tier Functional Assistant
+
+**Branch:** `002-silver-tier-functional-assistant`  
+**Status:** Tasks generated (tasks.md ready for implementation)  
+**Next Step:** Begin Phase 1 implementation (T001-T012: Foundation Extension)  
+
+### Silver Tier Overview
+
+| Component | Status | Location |
+|-----------|--------|----------|
+| **Spec** | ✅ Complete (v2.0.0) | `specs/002-silver-tier-functional-assistant/spec.md` |
+| **Plan** | ✅ Complete (v2.0.0) | `specs/002-silver-tier-functional-assistant/plan.md` |
+| **Tasks** | ✅ Complete (115 tasks) | `specs/002-silver-tier-functional-assistant/tasks.md` |
+| **Implementation** | ⏳ Pending | Phase 1: T001-T012 |
+
+### Silver Tier Features (S1-S9)
+
+- **S1:** Gmail Watcher (2-min interval, circuit breaker, metrics)
+- **S2:** WhatsApp Watcher (30-sec interval, keyword filtering, session preservation)
+- **S3:** Process Manager (auto-restart within 10s, restart limits)
+- **S4:** Plan Generation (YAML frontmatter, status tracking)
+- **S5:** Email Skill (Gmail API, approval for new contacts, --dry-run)
+- **S6:** HITL Approval Workflow (24-hour expiry, 5-sec detection)
+- **S7:** LinkedIn Posting (Playwright, session recovery, 1 post/day)
+- **S8:** Basic Scheduling (daily briefing 8 AM, weekly audit Sunday 10 PM)
+- **S9:** Agent Skills Documentation (7+ skills documented)
+
+### Implementation Phases
+
+1. **Phase 1:** Foundation Extension (T001-T012) - Circuit breaker, metrics, logging, DLQ
+2. **Phase 2:** Perception Layer (T013-T041) - Gmail, WhatsApp, Process Manager
+3. **Phase 3:** Reasoning Layer (T042-T062) - create_plan, request_approval, generate_briefing
+4. **Phase 4:** Action Layer (T063-T084) - send_email, linkedin_posting, DLQ integration
+5. **Phase 5:** Production Readiness (T085-T115) - Health endpoint, load/endurance tests, docs
+
+### Quick Commands for Silver Tier
+
+```bash
+# Start Phase 1 implementation
+qwen "Implement T001: Extend vault structure with 7 new folders per tasks.md"
+
+# Create PHR for task
+qwen "Create PHR for T001 completion in history/prompts/002-silver-tier-functional-assistant/"
+
+# Run quality gates
+cd FTE && ruff check src/ && black --check src/ && mypy --strict src/ && pytest --cov=src
+```
+
+---
+
 ## Development Environment
 
 ### AI Engine: Qwen Code CLI (FREE)

@@ -46,3 +46,6 @@ exclude_dirs = ["tests", ".venv", "__pycache__"]
 [tool.isort]
 profile = "black"
 line_length = 100
+
+[project.scripts]
+fte-watcher = "src.filesystem_watcher:main"

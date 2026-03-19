@@ -7,7 +7,6 @@ These tests verify that the classes have correct interfaces:
 - Inheritance relationships
 """
 
-import pytest
 from pathlib import Path
 
 
@@ -24,20 +23,21 @@ class TestBaseWatcherContract:
     def test_watcher_initialization(self):
         """Verify __init__ accepts vault_path, dry_run, interval parameters."""
         import inspect
+
         from src.base_watcher import BaseWatcher
 
         sig = inspect.signature(BaseWatcher.__init__)
         params = list(sig.parameters.keys())
 
         # Should have self, vault_path, dry_run, interval
-        assert 'vault_path' in params
-        assert 'dry_run' in params
-        assert 'interval' in params
+        assert "vault_path" in params
+        assert "dry_run" in params
+        assert "interval" in params
 
     def test_check_for_updates_signature(self):
         """Verify check_for_updates() returns list[Path]."""
         import inspect
-        from pathlib import Path
+
         from src.base_watcher import BaseWatcher
 
         sig = inspect.signature(BaseWatcher.check_for_updates)
@@ -49,7 +49,7 @@ class TestBaseWatcherContract:
     def test_create_action_file_signature(self):
         """Verify create_action_file() returns Path."""
         import inspect
-        from pathlib import Path
+
         from src.base_watcher import BaseWatcher
 
         sig = inspect.signature(BaseWatcher.create_action_file)
