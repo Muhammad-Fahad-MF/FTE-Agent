@@ -1,0 +1,218 @@
+# FTE-Agent Dashboard - Silver Tier
+
+**Last Updated**: {{TIMESTAMP}}  
+**System Status**: {{STATUS}}  
+**Version**: 2.0.0
+
+---
+
+## Quick Status
+
+| Component | Status | Last Check | Details |
+|-----------|--------|------------|---------|
+| **Gmail Watcher** | {{GMAIL_STATUS}} | {{GMAIL_LAST_CHECK}} | {{GMAIL_DETAILS}} |
+| **WhatsApp Watcher** | {{WHATSAPP_STATUS}} | {{WHATSAPP_LAST_CHECK}} | {{WHATSAPP_DETAILS}} |
+| **FileSystem Watcher** | {{FILESYSTEM_STATUS}} | {{FILESYSTEM_LAST_CHECK}} | {{FILESYSTEM_DETAILS}} |
+| **Process Manager** | {{PROCESS_MANAGER_STATUS}} | {{PROCESS_MANAGER_LAST_CHECK}} | {{PROCESS_MANAGER_DETAILS}} |
+| **Health Endpoint** | {{HEALTH_STATUS}} | {{HEALTH_LAST_CHECK}} | Port 8000 |
+
+---
+
+## Watcher Details
+
+### Gmail Watcher
+
+- **Status**: {{GMAIL_STATUS}}
+- **Interval**: 120 seconds
+- **Last Check**: {{GMAIL_LAST_CHECK}}
+- **New Emails (Today)**: {{GMAIL_NEW_EMAILS}}
+- **Processed Emails**: {{GMAIL_PROCESSED}}
+- **Circuit Breaker**: {{GMAIL_CIRCUIT_BREAKER}}
+- **Rate Limit**: {{GMAIL_RATE_LIMIT}}/100 calls this hour
+- **OAuth2 Token**: {{GMAIL_OAUTH_STATUS}}
+
+### WhatsApp Watcher
+
+- **Status**: {{WHATSAPP_STATUS}}
+- **Interval**: 30 seconds
+- **Last Check**: {{WHATSAPP_LAST_CHECK}}
+- **New Messages (Today)**: {{WHATSAPP_NEW_MESSAGES}}
+- **Keywords Matched**: {{WHATSAPP_KEYWORDS}}
+- **Circuit Breaker**: {{WHATSAPP_CIRCUIT_BREAKER}}
+- **Session Status**: {{WHATSAPP_SESSION_STATUS}}
+
+### FileSystem Watcher
+
+- **Status**: {{FILESYSTEM_STATUS}}
+- **Interval**: 60 seconds
+- **Last Check**: {{FILESYSTEM_LAST_CHECK}}
+- **New Files (Today)**: {{FILESYSTEM_NEW_FILES}}
+- **Source Folder**: `{{FILESYSTEM_SOURCE}}`
+- **Circuit Breaker**: {{FILESYSTEM_CIRCUIT_BREAKER}}
+
+---
+
+## Circuit Breakers
+
+| Service | State | Failure Count | Last Failure | Recovery In |
+|---------|-------|---------------|--------------|-------------|
+| **Gmail API** | {{GMAIL_CB_STATE}} | {{GMAIL_CB_FAILURES}} | {{GMAIL_CB_LAST_FAILURE}} | {{GMAIL_CB_RECOVERY}} |
+| **WhatsApp** | {{WHATSAPP_CB_STATE}} | {{WHATSAPP_CB_FAILURES}} | {{WHATSAPP_CB_LAST_FAILURE}} | {{WHATSAPP_CB_RECOVERY}} |
+| **FileSystem** | {{FILESYSTEM_CB_STATE}} | {{FILESYSTEM_CB_FAILURES}} | {{FILESYSTEM_CB_LAST_FAILURE}} | {{FILESYSTEM_CB_RECOVERY}} |
+| **Send Email** | {{SEND_EMAIL_CB_STATE}} | {{SEND_EMAIL_CB_FAILURES}} | {{SEND_EMAIL_CB_LAST_FAILURE}} | {{SEND_EMAIL_CB_RECOVERY}} |
+| **LinkedIn** | {{LINKEDIN_CB_STATE}} | {{LINKEDIN_CB_FAILURES}} | {{LINKEDIN_CB_LAST_FAILURE}} | {{LINKEDIN_CB_RECOVERY}} |
+
+---
+
+## Rate Limits
+
+| Service | Used | Limit | Window | Resets In |
+|---------|------|-------|--------|-----------|
+| **Gmail API** | {{GMAIL_RATE_USED}} | 100 calls | 1 hour | {{GMAIL_RATE_RESET}} |
+| **WhatsApp** | {{WHATSAPP_RATE_USED}} | 60 checks | 1 hour | {{WHATSAPP_RATE_RESET}} |
+| **Send Email** | {{SEND_EMAIL_RATE_USED}} | 50 emails | 1 hour | {{SEND_EMAIL_RATE_RESET}} |
+| **LinkedIn** | {{LINKEDIN_RATE_USED}} | 1 post | 24 hours | {{LINKEDIN_RATE_RESET}} |
+
+---
+
+## Memory Usage
+
+| Component | Memory (MB) | Threshold | Status |
+|-----------|-------------|-----------|--------|
+| **Gmail Watcher** | {{GMAIL_MEMORY}} | 200 | {{GMAIL_MEMORY_STATUS}} |
+| **WhatsApp Watcher** | {{WHATSAPP_MEMORY}} | 200 | {{WHATSAPP_MEMORY_STATUS}} |
+| **FileSystem Watcher** | {{FILESYSTEM_MEMORY}} | 200 | {{FILESYSTEM_MEMORY_STATUS}} |
+| **Process Manager** | {{PROCESS_MANAGER_MEMORY}} | 50 | {{PROCESS_MANAGER_MEMORY_STATUS}} |
+| **Health Endpoint** | {{HEALTH_ENDPOINT_MEMORY}} | 100 | {{HEALTH_ENDPOINT_MEMORY_STATUS}} |
+
+**Total Memory**: {{TOTAL_MEMORY}} MB  
+**System Memory**: {{SYSTEM_MEMORY}} MB / {{SYSTEM_MEMORY_TOTAL}} MB ({{SYSTEM_MEMORY_PERCENT}}%)
+
+---
+
+## Action Files
+
+| Folder | Count | Latest |
+|--------|-------|--------|
+| **Inbox/** | {{INBOX_COUNT}} | {{INBOX_LATEST}} |
+| **Needs_Action/** | {{NEEDS_ACTION_COUNT}} | {{NEEDS_ACTION_LATEST}} |
+| **Plans/** | {{PLANS_COUNT}} | {{PLANS_LATEST}} |
+| **Pending_Approval/** | {{PENDING_APPROVAL_COUNT}} | {{PENDING_APPROVAL_LATEST}} |
+| **Approved/** | {{APPROVED_COUNT}} | {{APPROVED_LATEST}} |
+| **Rejected/** | {{REJECTED_COUNT}} | {{REJECTED_LATEST}} |
+| **Done/** | {{DONE_COUNT}} | {{DONE_LATEST}} |
+| **Briefings/** | {{BRIEFINGS_COUNT}} | {{BRIEFINGS_LATEST}} |
+| **Failed_Actions/** | {{FAILED_ACTIONS_COUNT}} | {{FAILED_ACTIONS_LATEST}} |
+
+---
+
+## Dead Letter Queue
+
+| Metric | Value |
+|--------|-------|
+| **Total Failed Actions** | {{DLQ_TOTAL}} |
+| **Pending Reprocess** | {{DLQ_PENDING}} |
+| **Reprocessed (Today)** | {{DLQ_REPROCESSED}} |
+| **Max Retry Reached** | {{DLQ_MAX_RETRY}} |
+
+### Recent Failures
+
+| Action | Failure Reason | Count | Last Attempt |
+|--------|----------------|-------|--------------|
+| {{DLQ_ACTION_1}} | {{DLQ_REASON_1}} | {{DLQ_COUNT_1}} | {{DLQ_LAST_1}} |
+| {{DLQ_ACTION_2}} | {{DLQ_REASON_2}} | {{DLQ_COUNT_2}} | {{DLQ_LAST_2}} |
+| {{DLQ_ACTION_3}} | {{DLQ_REASON_3}} | {{DLQ_COUNT_3}} | {{DLQ_LAST_3}} |
+
+---
+
+## Alerts
+
+{{ALERTS_SECTION}}
+
+### Active Alerts
+
+| Time | Severity | Type | Message | Status |
+|------|----------|------|---------|--------|
+| {{ALERT_TIME_1}} | {{ALERT_SEVERITY_1}} | {{ALERT_TYPE_1}} | {{ALERT_MESSAGE_1}} | {{ALERT_STATUS_1}} |
+| {{ALERT_TIME_2}} | {{ALERT_SEVERITY_2}} | {{ALERT_TYPE_2}} | {{ALERT_MESSAGE_2}} | {{ALERT_STATUS_2}} |
+
+---
+
+## Recent Activity
+
+| Time | Component | Action | Details |
+|------|-----------|--------|---------|
+| {{ACTIVITY_TIME_1}} | {{ACTIVITY_COMPONENT_1}} | {{ACTIVITY_ACTION_1}} | {{ACTIVITY_DETAILS_1}} |
+| {{ACTIVITY_TIME_2}} | {{ACTIVITY_COMPONENT_2}} | {{ACTIVITY_ACTION_2}} | {{ACTIVITY_DETAILS_2}} |
+| {{ACTIVITY_TIME_3}} | {{ACTIVITY_COMPONENT_3}} | {{ACTIVITY_ACTION_3}} | {{ACTIVITY_DETAILS_3}} |
+| {{ACTIVITY_TIME_4}} | {{ACTIVITY_COMPONENT_4}} | {{ACTIVITY_ACTION_4}} | {{ACTIVITY_DETAILS_4}} |
+| {{ACTIVITY_TIME_5}} | {{ACTIVITY_COMPONENT_5}} | {{ACTIVITY_ACTION_5}} | {{ACTIVITY_DETAILS_5}} |
+
+---
+
+## Performance Metrics (Last Hour)
+
+| Metric | p50 | p95 | p99 | Count |
+|--------|-----|-----|-----|-------|
+| **Gmail Check Duration** | {{GMAIL_P50}}s | {{GMAIL_P95}}s | {{GMAIL_P99}}s | {{GMAIL_COUNT}} |
+| **WhatsApp Check Duration** | {{WHATSAPP_P50}}s | {{WHATSAPP_P95}}s | {{WHATSAPP_P99}}s | {{WHATSAPP_COUNT}} |
+| **FileSystem Check Duration** | {{FILESYSTEM_P50}}s | {{FILESYSTEM_P95}}s | {{FILESYSTEM_P99}}s | {{FILESYSTEM_COUNT}} |
+| **Action File Creation** | {{ACTION_FILE_P50}}s | {{ACTION_FILE_P95}}s | {{ACTION_FILE_P99}}s | {{ACTION_FILE_COUNT}} |
+| **Approval Detection** | {{APPROVAL_P50}}s | {{APPROVAL_P95}}s | {{APPROVAL_P99}}s | {{APPROVAL_COUNT}} |
+
+---
+
+## System Information
+
+| Metric | Value |
+|--------|-------|
+| **Uptime** | {{UPTIME}} |
+| **Version** | 2.0.0 (Silver Tier) |
+| **Environment** | {{ENVIRONMENT}} |
+| **DEV_MODE** | {{DEV_MODE}} |
+| **Python Version** | {{PYTHON_VERSION}} |
+| **OS** | {{OS}} |
+| **Disk Usage** | {{DISK_USAGE}} ({{DISK_PERCENT}}%) |
+| **CPU Usage** | {{CPU_USAGE}}% |
+
+---
+
+## Health Endpoint
+
+| Endpoint | Status | Response Time |
+|----------|--------|---------------|
+| **GET /health** | {{HEALTH_ENDPOINT_STATUS}} | {{HEALTH_ENDPOINT_P95}}ms |
+| **GET /metrics** | {{METRICS_ENDPOINT_STATUS}} | {{METRICS_ENDPOINT_P95}}ms |
+| **GET /ready** | {{READY_ENDPOINT_STATUS}} | {{READY_ENDPOINT_P95}}ms |
+
+---
+
+## Scheduled Tasks
+
+| Task | Schedule | Last Run | Next Run | Status |
+|------|----------|----------|----------|--------|
+| **Daily Briefing** | 8:00 AM daily | {{BRIEFING_LAST}} | {{BRIEFING_NEXT}} | {{BRIEFING_STATUS}} |
+| **Weekly Audit** | Sunday 10:00 PM | {{AUDIT_LAST}} | {{AUDIT_NEXT}} | {{AUDIT_STATUS}} |
+| **Backup** | 3:00 AM daily | {{BACKUP_LAST}} | {{BACKUP_NEXT}} | {{BACKUP_STATUS}} |
+| **Log Rotation** | Daily / 100MB | {{ROTATION_LAST}} | {{ROTATION_NEXT}} | {{ROTATION_STATUS}} |
+
+---
+
+## Quick Links
+
+- [Runbook](../docs/runbook.md)
+- [Disaster Recovery](../docs/disaster-recovery.md)
+- [Deployment Checklist](../docs/deployment-checklist.md)
+- [API Skills](../docs/api-skills.md)
+- [CHANGELOG](../CHANGELOG.md)
+
+---
+
+## Notes
+
+{{NOTES}}
+
+---
+
+**Dashboard Auto-Update**: Every 60 seconds  
+**Manual Refresh**: Run `python src/process_manager.py --update-dashboard`
