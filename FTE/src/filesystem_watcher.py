@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any
 
 from .base_watcher import BaseWatcher
+from .metrics.collector import get_metrics_collector
+from .utils.circuit_breaker import get_circuit_breaker
 
 
 def get_config_from_env() -> dict[str, Any]:
@@ -85,6 +87,16 @@ class FileSystemWatcher(BaseWatcher):
         self.inbox_path.mkdir(parents=True, exist_ok=True)
         self._stop_file_path = self.vault_path / "STOP"
 
+        # Initialize metrics collector
+        self.metrics = get_metrics_collector()
+
+        # Initialize circuit breaker for file operations
+        self.circuit_breaker = get_circuit_breaker(
+            name="filesystem_watcher",
+            failure_threshold=5,
+            recovery_timeout=60,
+        )
+
         # Recovery: Re-scan Inbox/ for files modified in last 24 hours after restart
         self._recover_missed_files()
 
@@ -132,78 +144,117 @@ class FileSystemWatcher(BaseWatcher):
         Returns:
             List of paths to files that need processing.
         """
-        if not self.inbox_path.exists():
+        # Check circuit breaker state first
+        if self.circuit_breaker.is_open():
+            self.logger.log(
+                "WARNING",
+                "circuit_breaker_open",
+                {
+                    "circuit_breaker": "filesystem_watcher",
+                    "message": "Circuit breaker OPEN - skipping FileSystem check",
+                },
+            )
             return []
 
-        new_files = []
-        for file_path in self.inbox_path.iterdir():
-            if file_path.is_file():
-                try:
-                    # Check if already processed using path+mtime hash
-                    file_key = (str(file_path), file_path.stat().st_mtime)
-                    if file_key not in self.processed_files:
-                        # This is a new or missed file
-                        # Validate path (security)
-                        self.validate_path(file_path)
-                        new_files.append(file_path)
-                        self.processed_files.add(file_key)
+        # Start timer for metrics
+        with self.metrics.timer("filesystem_watcher_check_duration", tags={"source_folder": str(self.inbox_path)}):
+            if not self.inbox_path.exists():
+                return []
 
-                        # Log file detection
-                        self.logger.log(
-                            "INFO",
-                            "file_detected",
-                            {"file": str(file_path), "size": file_path.stat().st_size},
-                        )
+            new_files = []
+            for file_path in self.inbox_path.iterdir():
+                if file_path.is_file():
+                    try:
+                        # Check if already processed using path+mtime hash
+                        file_key = (str(file_path), file_path.stat().st_mtime)
+                        if file_key not in self.processed_files:
+                            # This is a new or missed file
+                            # Validate path (security)
+                            self.validate_path(file_path)
+                            new_files.append(file_path)
+                            self.processed_files.add(file_key)
 
-                except PermissionError as e:
-                    # Log ERROR, skip file, continue monitoring
-                    self.logger.log(
-                        "ERROR", "permission_error", {"file": str(file_path), "error": str(e)}
-                    )
-                    continue
-
-                except FileNotFoundError as e:
-                    # Log WARNING, file may have been deleted
-                    self.logger.log(
-                        "WARNING", "file_not_found", {"file": str(file_path), "error": str(e)}
-                    )
-                    continue
-
-                except OSError as e:
-                    if e.errno == errno.ENOSPC:
-                        # Disk full - log CRITICAL, halt gracefully, create alert file
-                        self.logger.log(
-                            "CRITICAL", "disk_full", {"error": str(e), "errno": e.errno}
-                        )
-                        try:
-                            from .skills import create_alert_file
-
-                            create_alert_file(
-                                file_type="disk_full",
-                                source=str(file_path),
-                                details={"error": str(e)},
+                            # Emit metrics for items processed
+                            self.metrics.increment_counter(
+                                "filesystem_watcher_items_processed",
+                                tags={
+                                    "source_folder": str(self.inbox_path),
+                                    "file_extension": file_path.suffix,
+                                },
                             )
-                        except Exception:
-                            pass  # Can't create file if disk is full
-                        # Halt gracefully
-                        raise SystemExit(1) from None
-                    else:
-                        # Other OSError
+
+                            # Log file detection
+                            self.logger.log(
+                                "INFO",
+                                "file_detected",
+                                {"file": str(file_path), "size": file_path.stat().st_size},
+                            )
+
+                    except PermissionError as e:
+                        # Log ERROR, skip file, continue monitoring
                         self.logger.log(
-                            "ERROR",
-                            "os_error",
-                            {"file": str(file_path), "error": str(e), "errno": e.errno},
+                            "ERROR", "permission_error", {"file": str(file_path), "error": str(e)}
+                        )
+                        self.metrics.increment_counter(
+                            "filesystem_watcher_errors",
+                            tags={"error_type": "permission_error", "source_folder": str(self.inbox_path)},
                         )
                         continue
 
-                except Exception as e:
-                    # Log ERROR with stack trace, continue monitoring
-                    self.logger.log(
-                        "ERROR", "unexpected_error", {"file": str(file_path), "error": str(e)}
-                    )
-                    continue
+                    except FileNotFoundError as e:
+                        # Log WARNING, file may have been deleted
+                        self.logger.log(
+                            "WARNING", "file_not_found", {"file": str(file_path), "error": str(e)}
+                        )
+                        continue
 
-        return new_files
+                    except OSError as e:
+                        if e.errno == errno.ENOSPC:
+                            # Disk full - log CRITICAL, halt gracefully, create alert file
+                            self.logger.log(
+                                "CRITICAL", "disk_full", {"error": str(e), "errno": e.errno}
+                            )
+                            self.metrics.increment_counter(
+                                "filesystem_watcher_errors",
+                                tags={"error_type": "disk_full", "source_folder": str(self.inbox_path)},
+                            )
+                            try:
+                                from .skills import create_alert_file
+
+                                create_alert_file(
+                                    file_type="disk_full",
+                                    source=str(file_path),
+                                    details={"error": str(e)},
+                                )
+                            except Exception:
+                                pass  # Can't create file if disk is full
+                            # Halt gracefully
+                            raise SystemExit(1) from None
+                        else:
+                            # Other OSError
+                            self.logger.log(
+                                "ERROR",
+                                "os_error",
+                                {"file": str(file_path), "error": str(e), "errno": e.errno},
+                            )
+                            self.metrics.increment_counter(
+                                "filesystem_watcher_errors",
+                                tags={"error_type": "os_error", "source_folder": str(self.inbox_path)},
+                            )
+                            continue
+
+                    except Exception as e:
+                        # Log ERROR with stack trace, continue monitoring
+                        self.logger.log(
+                            "ERROR", "unexpected_error", {"file": str(file_path), "error": str(e)}
+                        )
+                        self.metrics.increment_counter(
+                            "filesystem_watcher_errors",
+                            tags={"error_type": "unexpected", "source_folder": str(self.inbox_path)},
+                        )
+                        continue
+
+            return new_files
 
     def create_action_file(self, file_path: Path) -> Path:
         """Create an action file for a detected file.

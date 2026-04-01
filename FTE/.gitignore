@@ -2,6 +2,13 @@
 .env
 .env.local
 
+# Database files (runtime data)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/*.db
+
 # Python cache
 __pycache__/
 *.py[cod]
@@ -24,8 +31,14 @@ vault/Done/
 vault/Pending_Approval/
 vault/Approved/
 vault/Rejected/
+vault/Plans/
+vault/Briefings/
 vault/Logs/
+vault/Failed_Actions/
 vault/*.archived
+
+# Templates (keep in version control)
+!vault/Templates/
 
 # Testing
 .pytest_cache/

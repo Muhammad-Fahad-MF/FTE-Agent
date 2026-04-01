@@ -115,6 +115,15 @@ class AuditLogger:
         """
         self.log(level="INFO", action=action, details=details)
 
+    def warning(self, action: str, details: dict[str, Any]) -> None:
+        """Log a WARNING level message.
+
+        Args:
+            action: Action type.
+            details: Contextual data dictionary.
+        """
+        self.log(level="WARNING", action=action, details=details)
+
     def error(
         self,
         action: str,
