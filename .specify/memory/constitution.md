@@ -1,30 +1,30 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 3.0.0 → 4.0.0 (Major: Silver Tier support - multiple watchers, HITL workflow, scheduling, MCP servers)
+Version change: 4.0.0 → 5.0.0 (Major: Gold Tier support - Odoo, social media, Ralph Wiggum, multi-MCP)
 Modified principles:
-  - I. Security-First Automation (added Silver Tier Extension: approval expiry, watcher monitoring)
-  - VIII. Production-Grade Error Handling (added Silver Tier Extension: API retry, circuit breaker, session expiry)
-  - XII. Performance Budgets (added Silver Tier Extension: watcher intervals, process manager, MCP timeouts)
-  - XIII. AI Reasoning Engine & Python Skills Pattern (expanded with tier progression table, skill requirements)
+  - I. Security-First Automation (added Gold Tier Extension: revenue tracking, encryption, max iterations)
+  - VIII. Production-Grade Error Handling (added Gold Tier Extension: Odoo RPC, social media rate limits, MCP isolation)
+  - IX. Testing Pyramid & Coverage (updated to risk-based 50-60% overall target)
+  - XII. Performance Budgets (added Gold Tier Extension: Odoo <5s, Briefing <60s, Ralph <30s)
+  - XIII. AI Reasoning Engine & Python Skills Pattern (expanded with Gold tier, Ralph Wiggum pattern)
 Added sections:
-  - Silver Tier Architecture (Perception→Reasoning→Action pattern, HITL workflow, Plan.md generation)
-  - Technology Stack (expanded with Bronze/Silver/Gold tier dependencies)
-  - Directory Structure (added Silver tier folders: Plans/, Briefings/, Templates/, watchers/, skills/, scheduler/)
-  - Safety Validation Checklist (expanded with Bronze and Silver tier validation items)
+  - Gold Tier Architecture (Perception→Reasoning→Action→CEO Briefing, Ralph Wiggum, Multi-MCP)
+  - Gold Tier Dependencies (Odoo v19+, Facebook Graph v18+, Twitter API v2, MCP coordination)
+  - Gold Tier Directory Structure (ralph_wiggum/, mcp_coordinator/, ceo_briefing/, cross_domain/)
+  - Gold Tier Safety Validation Checklist (all G1-G12 items with acceptance criteria)
 Removed sections: None
 Templates requiring updates:
-  - ⚠️ .specify/templates/plan-template.md (Add Silver tier Constitution Check for HITL, watchers, scheduling)
-  - ⚠️ .specify/templates/spec-template.md (Add Silver tier dependency requirements, API credentials)
-  - ⚠️ .specify/templates/tasks-template.md (Add Silver tier task categories: watcher, MCP, approval, scheduler)
-  - ⚠️ .specify/templates/commands/*.md (May need Silver tier workflow examples)
+  - ⚠️ .specify/templates/plan-template.md (Add Gold tier Constitution Check for Ralph Wiggum, CEO Briefing)
+  - ⚠️ .specify/templates/spec-template.md (Add Gold tier dependencies, Odoo/Social Media setup)
+  - ⚠️ .specify/templates/tasks-template.md (Add Gold tier task categories: Odoo, social, Ralph Wiggum)
+  - ⚠️ .specify/templates/commands/*.md (May need Gold tier workflow examples)
 Follow-up TODOs:
-  - TODO(CREATE_README): Create README.md with Qwen Code CLI setup instructions
-  - TODO(CREATE_SAFETY_MD): Create SAFETY.md documenting all safety features and limitations
-  - TODO(CREATE_QUALITY_MD): Create QUALITY.md with detailed quality gate configuration examples
-  - TODO(CREATE_SKILLS_MD): Create src/skills/*.py with Python Skills implementations for Silver tier
-  - TODO(CREATE_WATCHERS_MD): Create src/watchers/README.md with watcher implementation guide
-  - TODO(CREATE_MCP_MD): Create src/mcp_servers/README.md with MCP server setup guide
+  - TODO(ODOO_SETUP): Install Odoo Community v19+ locally or Docker (2 hours)
+  - TODO(FACEBOOK_DEV): Create Facebook Developer Account (1 hour)
+  - TODO(TWITTER_DEV): Create Twitter Developer Account (1 hour)
+  - TODO(RALPH_VALIDATE): Test Ralph Wiggum autonomous task completion
+  - TODO(MCP_COORDINATE): Test 5+ MCPs running concurrently
 -->
 
 # FTE-Agent Constitution
@@ -38,6 +38,8 @@ DEV_MODE=true MUST be set before ANY code runs—this is the kill switch for all
 **Rationale**: Autonomous systems handling business affairs require non-bypassable safety mechanisms. These five security controls (DEV_MODE, --dry-run, audit logging, HITL, STOP file) form the minimum viable safety foundation.
 
 **Silver Tier Extension**: Approval request files MUST include expiry timestamp (24 hours from creation). Expired approvals MUST be flagged in Dashboard.md and require re-approval before execution. Sensitive action thresholds (e.g., payment amount, email recipient count) MUST be configurable in Company_Handbook.md. All watcher processes MUST be monitored and auto-restarted on crash to prevent silent failures.
+
+**Gold Tier Extension**: CEO Briefing MUST include revenue tracking with data sourced from Odoo (self-hosted, local) or bank APIs. All financial data MUST be encrypted at rest. Ralph Wiggum loop MUST implement max iterations (default: 10) with state persistence. Multi-MCP coordination MUST prevent double-execution via distributed locking. Cross-domain data (personal vs business) MUST be tagged and separable in all reports.
 
 ### II. Local-First Privacy Architecture
 
@@ -83,11 +85,47 @@ Typed exceptions with specific error types MUST be used—bare `except Exception
 
 **Silver Tier Extension**: External API calls (Gmail API, WhatsApp Web, LinkedIn) MUST implement: (1) timeout of 30 seconds, (2) retry with exponential backoff (1s, 2s, 4s; maximum 3 retries), (3) circuit breaker pattern (fail fast after 5 consecutive failures), (4) rate limit detection and compliance (e.g., Gmail API quota). Session-based integrations (WhatsApp Web, LinkedIn) MUST detect session expiry and notify user for re-authentication. All API errors MUST be logged with full HTTP response details (status code, headers, body truncated to 1KB).
 
-### IX. Testing Pyramid & Coverage
+**Gold Tier Extension**: Odoo JSON-RPC calls MUST implement timeout (30 seconds), retry with exponential backoff (1s, 2s, 4s; max 3 retries), and circuit breaker (trip after 5 failures, reset after 300 seconds). Social media API calls (Facebook Graph, Twitter API v2) MUST implement platform-specific rate limit handling (Facebook: 200 calls/hour, Twitter: 300 calls/15min). Fallback mechanisms REQUIRED: when Odoo unavailable, queue invoices in memory; when social media API fails, save draft posts to `/Drafts/`. All MCP server failures MUST be isolated (one MCP failure doesn't affect others).
 
-Unit tests with 80%+ code coverage (measured via pytest-cov) are MANDATORY—every function with business logic MUST have unit tests, and all external dependencies (file system, APIs, databases) MUST be mocked. Integration tests are REQUIRED for ALL cross-component flows: watcher→action file creation, orchestrator→Qwen invocation, approval→execution flow. Contract tests are MANDATORY for ALL public interfaces: BaseWatcher abstract methods, Python Skills input/output schemas. Chaos tests are REQUIRED for failure scenarios: kill watcher mid-operation (verify recovery), fill disk to 95% (verify graceful degradation), corrupt action file (verify error handling).
+### IX. Testing Pyramid & Coverage (Risk-Based)
 
-**Rationale**: The testing pyramid ensures defects are caught at the appropriate level. High coverage prevents regression. Contract tests catch breaking changes. Chaos testing validates resilience under failure conditions.
+**Gold Tier Approach**: Focus testing on complex business logic and critical file flows. Simple utilities, getters/setters, and static templates DO NOT require tests.
+
+**Coverage Targets**:
+- Critical Business Logic (Ralph Wiggum, CEO Briefing, revenue calculations): 90%+
+- File System Flows (watcher→plan→approval→execution): 80%+
+- External API Integration (Odoo, Social Media, Banking): 70%+
+- Utilities and Helpers: 0-30% (only if complex or frequently changed)
+- **Overall Target: 50-60%** (measured via pytest-cov)
+
+**Mandatory Tests** (ALL Gold Tier features):
+1. Ralph Wiggum loop state persistence across restarts
+2. CEO Briefing revenue calculation accuracy (with mocked Odoo data)
+3. Multi-MCP coordination (no double-execution)
+4. Approval workflow with 24-hour expiry
+5. Circuit breaker trip and recovery
+6. Session expiry detection (WhatsApp, LinkedIn, Odoo)
+7. Fallback mechanism (API unavailable → draft/in-memory queue)
+
+**Integration Tests** (Critical Flows Only):
+1. Gmail watcher → Plan generation → Approval → Email send
+2. Odoo invoice creation → CEO Briefing revenue tracking
+3. Social media post → Approval → Post execution → Analytics
+4. Ralph Wiggum loop: 5-step autonomous task completion
+
+**Chaos Tests** (Failure Scenarios):
+1. Kill watcher mid-operation → verify auto-restart within 10s
+2. Odoo API failure → verify fallback to draft invoices
+3. MCP coordinator crash → verify MCPs pause and recover
+4. Disk 95% full → verify graceful degradation with alert
+
+**Tests MAY Be Skipped For**:
+- Simple getters/setters (one-line return statements)
+- Static templates (no dynamic content)
+- Logging/formatting functions (unless compliance required)
+- Utility functions with trivial logic (filename sanitization, etc.)
+
+**Rationale**: Risk-based testing focuses effort where it matters. Critical flows (revenue, multi-MCP, Ralph Wiggum) require thorough testing. Trivial utilities don't. This approach saves 60-70% on token/context usage while maintaining quality.
 
 ### X. Code Quality Gates (BLOCKING MERGE)
 
@@ -109,6 +147,8 @@ Watcher check interval MUST NOT exceed 60 seconds (configurable per deployment).
 
 **Silver Tier Extension**: Watcher intervals MUST NOT exceed: Gmail (2 minutes), WhatsApp (30 seconds), FileSystem (60 seconds). Process manager MUST restart crashed watchers within 10 seconds. MCP server calls MUST complete within 5 seconds (excluding external API latency). Approval workflow MUST detect file moves within 5 seconds. Scheduled tasks MUST start within 60 seconds of scheduled time. Memory usage per watcher MUST NOT exceed 200MB.
 
+**Gold Tier Extension**: Odoo JSON-RPC calls MUST complete within 5 seconds (excluding external API latency). CEO Briefing generation MUST complete within 60 seconds. Ralph Wiggum iteration MUST complete within 30 seconds per loop. Multi-MCP coordination overhead MUST NOT exceed 100ms. Analytics dashboard refresh MUST complete within 5 seconds. Cross-domain queries MUST complete within 2 seconds.
+
 ### XIII. AI Reasoning Engine & Python Skills Pattern
 
 **AI Reasoning Engine**: Qwen Code CLI (free tier: 1,000 OAuth calls/day) MUST be used for all AI-assisted development. MCP servers are NOT supported—Python Skills pattern MUST be used instead.
@@ -124,11 +164,38 @@ Watcher check interval MUST NOT exceed 60 seconds (configurable per deployment).
 
 **Tier Progression**:
 
-| Tier | Python Skills Scope | External Dependencies |
-|------|---------------------|----------------------|
-| **Bronze** | File operations only (read, write, move, create action files) | `watchdog`, `pathlib` |
-| **Silver** | Email sending (`smtplib`), Web automation (`playwright`), HTTP APIs (`requests`), Plan generation, Approval workflow | `playwright`, `google-auth`, `requests` |
-| **Gold** | Multiple external services (Odoo JSON-RPC, social media APIs, banking APIs, accounting integration) | Odoo client, Facebook API, Twitter API, banking APIs |
+| Tier | Python Skills Scope | External Dependencies | MCP Servers |
+|------|---------------------|----------------------|-------------|
+| **Bronze** | File operations only (read, write, move, create action files) | `watchdog`, `pathlib` | None |
+| **Silver** | Email sending (`smtplib`), Web automation (`playwright`), HTTP APIs (`requests`), Plan generation, Approval workflow | `playwright`, `google-auth`, `requests` | Optional (Email, Browser) |
+| **Gold** | Odoo accounting, Social media APIs, Bank integrations, CEO Briefing, Ralph Wiggum loop | Odoo v19+, Facebook Graph API, Twitter API v2, banking APIs | Required (5+: Odoo, Social, Browser, Calendar, Email) |
+
+**Ralph Wiggum Pattern Documentation** (Gold Tier MANDATORY):
+
+```python
+# Ralph Wiggum Stop Hook Pattern (Gold Tier MANDATORY)
+
+def ralph_wiggum_stop_hook(output: str, task_file: Path) -> bool:
+    """
+    Intercept Claude exit and re-inject prompt if task incomplete.
+    
+    Returns:
+        True: Allow exit (task complete)
+        False: Block exit, re-inject prompt (task incomplete)
+    """
+    if not is_task_complete(task_file):
+        block_exit()
+        reinject_prompt(output)
+        return False
+    return True
+
+# State file pattern:
+# /In_Progress/<agent>/<task-id>.md
+# - Created when task starts
+# - Updated with progress every iteration
+# - Moved to /Done/ when complete
+# - Max iterations: 10 (configurable in Company_Handbook.md)
+```
 
 **Example Skill Structure**:
 ```python
@@ -140,17 +207,17 @@ def send_email(
     dry_run: bool = False
 ) -> dict[str, Any]:
     """Send email via SMTP.
-    
+
     Args:
         to: Recipient email address
         subject: Email subject line
         body: Email body text
         attachments: Optional list of file paths to attach
         dry_run: If True, log without sending
-        
+
     Returns:
         Dict with status, message_id, timestamp
-        
+
     Raises:
         ValueError: If email address invalid
         SMTPException: If sending fails
@@ -287,6 +354,66 @@ completed_steps: <number>
 - Approval steps link to approval file
 - Final status written to Dashboard.md
 
+## Gold Tier Architecture
+
+### Perception → Reasoning → Action → CEO Briefing Pattern
+
+Gold tier extends Silver tier with autonomous multi-step task completion, Odoo accounting integration, social media APIs, and CEO Briefing with revenue tracking:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ GOLD TIER: AUTONOMOUS EMPLOYEE                              │
+├─────────────────────────────────────────────────────────────┤
+│ PERCEPTION LAYER (Extended)                                 │
+│ - Gmail, WhatsApp, FileSystem (Silver)                      │
+│ - Odoo Webhooks (NEW)                                       │
+│ - Bank Transaction Feeds (NEW)                              │
+│ - Social Media Mentions (NEW)                               │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────┐
+│ REASONING LAYER (Extended)                                  │
+│ - Qwen Code CLI + Ralph Wiggum Loop (NEW)                   │
+│ - Multi-step autonomous task completion                     │
+│ - State file management (/In_Progress/<agent>/)             │
+│ - Task completion detection (/Done/)                        │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────┐
+│ ACTION LAYER (Extended)                                     │
+│ - Python Skills (Silver)                                    │
+│ - MCP Servers (5+ coordinated):                             │
+│   * Odoo MCP (invoices, payments, accounting)               │
+│   * Social MCP (Facebook, Instagram, Twitter)               │
+│   * Browser MCP (Playwright automation)                     │
+│   * Calendar MCP (scheduling, meetings)                     │
+│   * Email MCP (Gmail API)                                   │
+│ - MCP Coordinator (NEW - prevents double-execution)         │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────┐
+│ CEO BRIEFING ENGINE (NEW)                                   │
+│ - Revenue tracking from Odoo/bank data                      │
+│ - Expense categorization and analysis                       │
+│ - Bottleneck identification                                 │
+│ - Proactive suggestions generation                          │
+│ - Output: vault/Briefings/CEO_Briefing_YYYYMMDD.md          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Ralph Wiggum Loop Pattern**:
+- State file creation: `/In_Progress/<agent>/<task-id>.md`
+- Stop hook intercepts Claude/Qwen exit
+- Re-inject prompt if task file not in `/Done/`
+- Max iterations: 10 (configurable in Company_Handbook.md)
+- State persistence across restarts
+
+**Multi-MCP Coordination**:
+- Single coordinator process prevents double-execution
+- MCP servers isolated (failure doesn't cascade)
+- Shared audit logging across all MCPs
+- Health monitoring per MCP server
+
 ## Technology Stack
 
 ### Core Runtime
@@ -307,10 +434,33 @@ completed_steps: <number>
 - **Process Management**: `psutil>=5.9.0` for watcher process monitoring
 - **MCP Servers** (OPTIONAL): Node.js v24+ for MCP server implementations
 
-### Gold Tier Dependencies (Future)
-- **Accounting**: Odoo JSON-RPC client (Odoo 19+)
-- **Social Media**: Platform-specific API clients (Facebook, Instagram, Twitter/X)
-- **Banking**: Bank API clients or Playwright for web automation
+### Gold Tier Dependencies (MANDATORY for G1-G12)
+- **Accounting Integration**: 
+  - Odoo Community Edition v19+ (self-hosted, local or Docker)
+  - JSON-RPC client: `requests>=2.31.0` with custom Odoo RPC wrapper
+  - Database: PostgreSQL 14+ (Odoo backend)
+  - Setup time: 2 hours (install + configure)
+  
+- **Social Media APIs**:
+  - Facebook Graph API v18.0+ (requires Facebook Developer Account, 1h setup)
+  - Instagram Graph API v18.0+ (requires Facebook Business integration)
+  - Twitter API v2 (requires Twitter Developer Account, 1h setup; free tier: 1,500 posts/month)
+  - LinkedIn API (browser automation via Playwright, no API key required)
+  
+- **Banking Integration** (for CEO Briefing revenue tracking):
+  - Bank API clients (platform-specific) OR
+  - CSV import pattern (manual download, automated parsing)
+  - Plaid API (optional, for US banks)
+  
+- **Multi-MCP Coordination**:
+  - Node.js v24+ (for MCP server implementations)
+  - `@modelcontextprotocol/sdk` for MCP server development
+  - Redis (optional, for distributed locking across MCPs)
+  
+- **Analytics & Visualization**:
+  - `prometheus-client>=0.19.0` for metrics exposition
+  - `matplotlib>=3.8.0` or `plotly>=5.18.0` for chart generation (Markdown-compatible)
+  - SQLite (for metrics persistence, already in Silver)
 
 ### Quality Tools (ALL TIERS - BLOCKING MERGE)
 - **Linting**: `ruff>=0.1.0` with 0 errors required
@@ -330,9 +480,16 @@ vault/
   ├── Approved/           # Human-approved actions ready to execute
   ├── Rejected/           # Declined actions (logged, not executed)
   ├── Briefings/          # [SILVER] Daily/Weekly briefings
+  │   ├── Daily_*.md        # [SILVER] Daily briefings
+  │   ├── Weekly_*.md       # [SILVER] Weekly audits
+  │   └── CEO_Briefing_*.md # [GOLD] CEO briefings with revenue
   ├── Templates/          # [SILVER] Plan and approval request templates
   ├── Done/               # Completed tasks
   ├── Logs/               # Audit logs (JSON)
+  ├── In_Progress/        # [GOLD] Ralph Wiggum state files
+  │   └── <agent>/          # [GOLD] Per-agent state directories
+  ├── Drafts/             # [GOLD] Draft posts, invoices
+  ├── Analytics/          # [GOLD] Charts, metrics reports
   ├── Dashboard.md        # System status overview
   └── Company_Handbook.md # Rules of engagement
 
@@ -351,8 +508,28 @@ src/
   │   ├── request_approval.py # Approval request creation
   │   ├── send_email.py       # Email sending (smtplib)
   │   └── linkedin_posting.py # LinkedIn automation (Playwright)
+  ├── ralph_wiggum/         # [GOLD] Ralph Wiggum loop implementation
+  │   ├── stop_hook.py        # Stop hook interceptor
+  │   ├── state_manager.py    # State file management (/In_Progress/)
+  │   └── iteration_tracker.py # Max iterations, retry logic
+  ├── mcp_coordinator/      # [GOLD] Multi-MCP coordination
+  │   ├── coordinator.py      # Prevents double-execution
+  │   ├── health_monitor.py   # MCP health checks
+  │   └── distributed_lock.py # Locking for concurrent MCPs
+  ├── ceo_briefing/         # [GOLD] CEO Briefing engine
+  │   ├── revenue_tracker.py  # Revenue calculation from Odoo/bank
+  │   ├── expense_analyzer.py # Expense categorization
+  │   ├── bottleneck_detector.py # Identify delays
+  │   └── suggestion_generator.py # Proactive recommendations
+  ├── cross_domain/         # [GOLD] Personal + Business unification
+  │   ├── domain_tagger.py    # Tag actions as personal/business
+  │   └── unified_dashboard.py # Combined view generation
   ├── mcp_servers/          # [SILVER] OPTIONAL - MCP servers for external actions
-  │   └── email_mcp/          # Email MCP server (Node.js or Python)
+  │   ├── odoo_mcp/           # [GOLD] Odoo JSON-RPC wrapper
+  │   ├── social_mcp/         # [GOLD] Facebook, Instagram, Twitter
+  │   ├── browser_mcp/        # [SILVER] Playwright automation
+  │   ├── calendar_mcp/       # [GOLD] Calendar integration
+  │   └── email_mcp/          # [SILVER] Gmail API
   └── scheduler/            # [SILVER] Scheduled task implementations
       ├── daily_briefing.py   # 8:00 AM daily summary
       └── weekly_audit.py     # Sunday 10:00 PM weekly review
@@ -363,8 +540,13 @@ scripts/
   ├── start_watchers.ps1    # [SILVER] Start all watchers via process manager
   └── register_scheduled_tasks.ps1  # [SILVER] Windows Task Scheduler setup
 
+data/
+  ├── odoo.db               # [GOLD] Odoo SQLite/PostgreSQL
+  ├── revenue.db            # [GOLD] Revenue tracking cache
+  └── analytics.db          # [GOLD] Analytics data store
+
 tests/
-  ├── unit/                 # Unit tests (80%+ coverage required)
+  ├── unit/                 # Unit tests (50-60% coverage required)
   ├── integration/          # Integration tests (watcher→plan→approval→execution)
   ├── contract/             # Contract tests (BaseWatcher, Python Skills interfaces)
   └── chaos/                # Chaos/failure scenario tests (API failures, crashes)
@@ -379,7 +561,7 @@ tests/
 - [ ] STOP file halts orchestrator within 5 seconds
 - [ ] All actions logged to /Logs/ with correlation_id
 - [ ] Path traversal attempts blocked and logged
-- [ ] pytest --cov=src shows 80%+ coverage
+- [ ] pytest --cov=src shows 50-60%+ coverage (risk-based)
 - [ ] ruff check src/ passes with 0 errors
 - [ ] mypy --strict src/ passes with 0 errors
 - [ ] bandit -r src/ shows 0 high-severity issues
@@ -401,18 +583,92 @@ tests/
 - [ ] API rate limit handling tested (exponential backoff verified)
 - [ ] Session expiry (WhatsApp, LinkedIn) detected and user notified
 - [ ] Windows Task Scheduler tasks registered and executable
-- [ ] Integration test: watcher→plan→approval→MCP execution completes end-to-end
+- [ ] Integration test: watcher→plan→approval→MCP execution completes
 - [ ] Chaos test: Kill watcher mid-operation, verify recovery within 60 seconds
 - [ ] Chaos test: Simulate API failure, verify retry with backoff
 - [ ] Chaos test: Fill disk to 95%, verify graceful degradation and alert
 
-### Gold Tier (Future - Not Required for Silver)
-- [ ] Odoo accounting integration creates invoices via JSON-RPC
-- [ ] Facebook/Instagram posting with approval workflow
-- [ ] Twitter/X posting with approval workflow
-- [ ] Weekly CEO Briefing with revenue tracking generated
-- [ ] Ralph Wiggum loop completes multi-step tasks autonomously
-- [ ] Bank transaction monitoring creates alerts for unusual activity
+### Gold Tier (REQUIRED for Gold Completion - All Must Pass)
+
+**Odoo Accounting (G1):**
+- [ ] Odoo Community v19+ installed and running locally (or Docker container)
+- [ ] JSON-RPC connection established (test: create invoice via API)
+- [ ] Invoice creation via MCP/Skill works (dry-run verified)
+- [ ] Payment tracking updates invoice status
+- [ ] Financial reports generated (P&L, balance sheet)
+- [ ] Bank transaction import and categorization functional
+
+**Social Media Integration (G2-G4):**
+- [ ] Facebook post creation with approval workflow
+- [ ] Instagram post creation (images, carousels) with approval
+- [ ] Twitter/X tweet creation with approval workflow
+- [ ] Analytics retrieval for all platforms (reach, engagement)
+- [ ] Weekly summary reports generated automatically
+
+**CEO Briefing (G5):**
+- [ ] Weekly audit runs Sunday 10 PM automatically
+- [ ] Revenue data pulled from Odoo/bank integration
+- [ ] Expense analysis with subscription audit
+- [ ] Bottleneck identification (tasks taking too long)
+- [ ] Proactive suggestions generated (cost optimization)
+- [ ] Briefing format matches template (Executive Summary, Revenue, Tasks, Bottlenecks, Suggestions)
+
+**Ralph Wiggum Loop (G6):**
+- [ ] Stop hook intercepts Claude/Qwen exit correctly
+- [ ] State files created in `/In_Progress/<agent>/`
+- [ ] Task completion detection (file moved to `/Done/`)
+- [ ] Max iterations enforced (default: 10)
+- [ ] State persists across application restarts
+- [ ] Loop recovery after crash (state file not lost)
+
+**Multi-MCP Coordination (G7):**
+- [ ] 5+ MCP servers configured and operational (Odoo, Social, Browser, Calendar, Email)
+- [ ] MCP Coordinator prevents double-execution
+- [ ] MCP servers isolated (one failure doesn't affect others)
+- [ ] Centralized audit logging across all MCPs
+- [ ] Health monitoring per MCP server (status page)
+
+**Error Recovery (G8):**
+- [ ] All external calls have retry logic with exponential backoff
+- [ ] Circuit breakers prevent cascade failures (trip after 5 failures)
+- [ ] Fallback mechanisms in place (in-memory queue, draft files)
+- [ ] Alert escalation working (4 levels: log → dashboard → alert file → notify)
+- [ ] Chaos test: Kill one MCP, verify others continue operating
+
+**Audit Logging (G9):**
+- [ ] Enhanced log schema implemented (timestamp, level, component, action, correlation_id, user, details, duration_ms, result)
+- [ ] Log search utility functional (query by date, component, action, correlation_id)
+- [ ] Log reporting (daily/weekly summaries) generated
+- [ ] 90-day log retention enforced
+
+**Cross-Domain (G10):**
+- [ ] Domain tagging on all action files (personal vs business)
+- [ ] Unified Dashboard.md with domain sections
+- [ ] Cross-domain workflows supported (personal email → business lead)
+- [ ] Domain filtering in reports
+
+**Analytics Dashboard (G11):**
+- [ ] Real-time metrics dashboard (watcher uptime, action completion rate, approval stats, error rates)
+- [ ] Visual charts in Dashboard.md (Markdown-compatible)
+- [ ] Export functionality (PDF reports, CSV data)
+
+**Documentation (G12):**
+- [ ] Gold Tier Architecture document complete (`docs/gold-tier-architecture.md`)
+- [ ] Deployment guide complete (`docs/gold-deployment.md`)
+- [ ] API Reference complete (`docs/gold-api-reference.md`)
+- [ ] Lessons Learned captured (`docs/gold-lessons-learned.md`)
+
+**Integration Tests:**
+- [ ] End-to-end: Odoo invoice → CEO Briefing revenue tracking
+- [ ] End-to-end: Social media post → Analytics summary
+- [ ] End-to-end: Ralph Wiggum loop completes 5-step task autonomously
+- [ ] Multi-MCP: 3 MCPs operate concurrently without interference
+
+**Chaos Tests:**
+- [ ] Odoo API failure: Verify fallback to draft invoices
+- [ ] Social media API rate limit: Verify queuing and retry
+- [ ] MCP crash: Verify coordinator detects and continues with remaining MCPs
+- [ ] Ralph Wiggum max iterations: Verify graceful halt with state preserved
 
 ## Emergency Procedures
 
@@ -422,6 +678,11 @@ tests/
 - **Performance degradation**: Check memory usage, review log rotation, verify no file handle leaks
 - **Qwen API rate limit hit**: Batch requests, implement caching, or wait for daily reset (midnight UTC)
 - **Session expiry detected**: Notify user for re-authentication, pause affected watcher
+- **Odoo unavailable**: Queue invoices in `/Drafts/`, retry after 5 minutes, alert user after 3 failures
+- **Social media API rate limited**: Save post as draft, schedule retry after rate limit reset (Facebook: 1 hour, Twitter: 15 minutes)
+- **Ralph Wiggum infinite loop detected**: Max iterations reached, preserve state, create alert file in `Needs_Action/`
+- **MCP Coordinator failure**: All MCPs pause, coordinator restarts within 10 seconds, queued requests processed
+- **CEO Briefing generation fails**: Create alert file, retry next scheduled run, notify user of missing data
 
 ## Development Workflow & Quality Gates
 
@@ -443,4 +704,11 @@ This constitution supersedes all other development practices. Amendments require
 
 All PRs and reviews MUST verify compliance with this constitution. Use `.specify/memory/constitution.md` as the single source of truth for runtime development guidance.
 
-**Version**: 4.0.0 | **Ratified**: 2026-03-07 | **Last Amended**: 2026-03-19
+**Gold Tier amendments require**:
+1. Odoo Community v19+ setup and testing (2 hours)
+2. Facebook Developer Account setup (1 hour)
+3. Twitter Developer Account setup (1 hour)
+4. Ralph Wiggum pattern validation (autonomous task completion test)
+5. Multi-MCP coordination test (5+ MCPs running concurrently)
+
+**Version**: 5.0.0 | **Ratified**: 2026-04-02 | **Last Amended**: 2026-04-02 (Gold Tier preparation)

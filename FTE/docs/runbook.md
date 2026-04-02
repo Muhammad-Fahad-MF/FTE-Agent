@@ -1,9 +1,20 @@
-# Operational Runbook: Silver Tier Functional Assistant
+# Operational Runbook: Gold Tier Autonomous Employee
 
-**Version**: 2.0.0  
+**Version**: 3.0.0  
 **Last Updated**: 2026-04-02  
-**Owner**: FTE-Agent Team  
+**Branch**: `003-gold-tier-autonomous-employee`  
 **Status**: Production Ready
+
+---
+
+## Table of Contents
+
+1. [Quick Reference](#quick-reference)
+2. [Common Operations](#common-operations)
+3. [Troubleshooting](#troubleshooting)
+4. [Maintenance Procedures](#maintenance-procedures)
+5. [Security Disclosure](#security-disclosure)
+6. [Emergency Procedures](#emergency-procedures)
 
 ---
 
@@ -11,457 +22,895 @@
 
 | Issue | Symptom | Immediate Action | Escalation |
 |-------|---------|------------------|------------|
-| Watcher Crashed | Dashboard.md shows "DOWN" | Check logs, restart watcher | If restart fails >3 times |
-| Session Expired | WhatsApp/LinkedIn auth failure | Re-authenticate via browser | If persists, check OAuth tokens |
-| API Quota Exceeded | Gmail API 429 errors | Wait 1 hour, reduce frequency | If critical, request quota increase |
-| Disk Full | Log rotation fails, DB errors | Clear old logs, expand disk | If recurring, increase retention policy |
-| Circuit Breaker OPEN | API calls failing fast | Check external service status | If service healthy, reset breaker |
-| Memory High | >200MB per watcher | Check for leaks, restart | If persists, profile memory |
+| Watcher Crashed | Dashboard shows "DOWN" | Check Process Manager, auto-restart | If restart fails >3/hour |
+| Circuit Breaker OPEN | API calls failing fast | Check external service, wait 5 min | If service healthy, manual reset |
+| DLQ Size > 10 | Alert in Dashboard | Review DLQ items, resolve failures | If pattern emerges, investigate root cause |
+| Odoo Unavailable | Fallback mode activated | Check Odoo service, transactions queued | If prolonged, manual transaction logging |
+| Social API Rate Limit | Posts failing, drafts created | Wait for reset window | If critical, request limit increase |
+| Approval Queue > 20 | Backlog alert | Review pending approvals | If aging >24h, auto-expire or escalate |
+| Memory High | >500MB total | Check individual watchers, restart if >200MB | If persists, profile for leaks |
+| CEO Briefing Failed | Monday 8 AM task failed | Check Odoo connectivity, run manually | If data issues, investigate sources |
 
 ---
 
-## System Overview
+## Common Operations
 
-### Components
+### Start All Watchers
 
-| Component | Process | Port | Health Endpoint |
-|-----------|---------|------|-----------------|
-| Gmail Watcher | `python src/watchers/gmail_watcher.py` | - | `/health/gmail` |
-| WhatsApp Watcher | `python src/watchers/whatsapp_watcher.py` | - | `/health/whatsapp` |
-| FileSystem Watcher | `python src/filesystem_watcher.py` | - | `/health/filesystem` |
-| Process Manager | `python src/process_manager.py` | - | `/health/process_manager` |
-| Health API | `uvicorn src.api.health_endpoint:app` | 8000 | `/health` |
-
-### Data Stores
-
-| Database | Path | Purpose | Retention |
-|----------|------|---------|-----------|
-| Circuit Breakers | `FTE/data/circuit_breakers.db` | State persistence | Indefinite |
-| Processed Emails | `FTE/data/processed_emails.db` | Deduplication | 30 days |
-| Failed Actions | `FTE/data/failed_actions.db` | DLQ storage | 90 days |
-| Metrics | `FTE/data/metrics.db` | Prometheus metrics | 7 days |
-
-### Log Locations
-
-| Log Type | Path | Rotation | Retention |
-|----------|------|----------|-----------|
-| Application | `FTE/vault/Logs/app_*.log` | 100MB or daily | 7 days INFO, 30 days ERROR |
-| Audit | `FTE/vault/Logs/audit_*.log` | 100MB or daily | 1 year |
-| Access | `FTE/vault/Logs/access_*.log` | 100MB or daily | 30 days |
-
----
-
-## Common Issues & Troubleshooting
-
-### 1. Watcher Crashed
-
-**Symptoms:**
-- Dashboard.md shows watcher status as "DOWN" or "CRASHED"
-- No new action files created in `vault/Needs_Action/`
-- Process Manager logs show restart attempts
-
-**Diagnosis:**
+**Windows**:
 ```bash
-# Check watcher logs
 cd H:\Programming\FTE-Agent\FTE
-Get-Content vault\Logs\app_*.log -Tail 100 | Select-String "gmail_watcher|whatsapp_watcher"
-
-# Check Process Manager status
-python src/process_manager.py --status
-
-# Check health endpoint
-curl http://localhost:8000/health
+.\scripts\start-watchers.bat
 ```
 
-**Resolution:**
-1. **Automatic Restart**: Process Manager should auto-restart within 10 seconds
-2. **Manual Restart**:
-   ```bash
-   # Stop all watchers
-   python src/process_manager.py --stop
-   
-   # Start all watchers
-   python src/process_manager.py --start
-   ```
-3. **Check Root Cause**:
-   - Review logs for exception stack traces
-   - Check circuit breaker status: `SELECT * FROM circuit_breakers;`
-   - Verify OAuth tokens not expired
-
-**Escalation**: If watcher crashes >3 times in 1 hour:
-- Check external API status (Gmail, WhatsApp Web)
-- Review rate limiting: `SELECT * FROM rate_limits;`
-- Profile memory usage: `python -m memory_profiler src/watchers/gmail_watcher.py`
-
----
-
-### 2. Session Expired (WhatsApp/LinkedIn)
-
-**Symptoms:**
-- WhatsApp Watcher logs: "WhatsAppSessionExpired"
-- LinkedIn posting fails with 401 Unauthorized
-- Browser session not persisting
-
-**Diagnosis:**
+**Linux/Mac**:
 ```bash
-# Check session files
-dir FTE\vault\whatsapp_session\
-dir FTE\vault\linkedin_session\
-
-# Check session age
-Get-Item FTE\vault\whatsapp_session\storage.json | Select-Object LastWriteTime
+cd /path/to/FTE-Agent/FTE
+./scripts/start-watchers.sh
 ```
 
-**Resolution:**
-1. **Re-authenticate WhatsApp**:
-   ```bash
-   python src/watchers/whatsapp_watcher.py --reauth
-   ```
-   - Scan QR code with WhatsApp mobile app
-   - Session saved to `vault/whatsapp_session/storage.json`
-
-2. **Re-authenticate LinkedIn**:
-   ```bash
-   python src/skills/linkedin_posting.py --reauth
-   ```
-   - Login via browser
-   - Session cookies saved to `vault/linkedin_session/`
-
-3. **Verify Session**:
-   ```bash
-   python src/watchers/whatsapp_watcher.py --test-session
-   ```
-
-**Prevention:**
-- Sessions persist across restarts (saved to `vault/<service>_session/`)
-- Re-authenticate proactively every 30 days
-- Monitor Dashboard.md for expiry warnings
-
-**Escalation**: If session expires repeatedly:
-- Check for IP address changes (triggers security logout)
-- Verify WhatsApp Web not logged out from mobile
-- Check LinkedIn security settings for suspicious activity blocks
-
----
-
-### 3. API Quota Exceeded (Gmail)
-
-**Symptoms:**
-- Gmail API returns HTTP 429 Too Many Requests
-- Logs: "Rate limit exceeded, skipping check"
-- Watcher continues but no new emails processed
-
-**Diagnosis:**
+**Manual Start**:
 ```bash
-# Check rate limit counter
-sqlite3 FTE\data\rate_limits.db "SELECT * FROM gmail_rate_limit;"
+# Start Gmail Watcher
+python src/watchers/gmail_watcher.py &
 
-# Check API usage in Google Cloud Console
-# https://console.cloud.google.com/apis/api/gmail.googleapis.com/quotas
+# Start WhatsApp Watcher
+python src/watchers/whatsapp_watcher.py &
+
+# Start FileSystem Watcher
+python src/filesystem_watcher.py &
+
+# Start Process Manager (monitors all watchers)
+python src/process_manager.py
 ```
 
-**Resolution:**
-1. **Wait for Reset**: Rate limit resets every hour (default: 100 calls/hour)
-2. **Reduce Frequency**: Edit `Company_Handbook.md`:
-   ```ini
-   [Gmail]
-   check_interval_seconds = 180  # Increase from 120 to 180
-   rate_limit_calls_per_hour = 50  # Reduce from 100 to 50
-   ```
-3. **Request Quota Increase**:
-   - Go to Google Cloud Console
-   - Navigate to APIs & Services > Dashboard > Gmail API
-   - Request quota increase (requires business justification)
+### Stop All Watchers
 
-**Monitoring:**
-- Dashboard.md shows "Gmail Rate Limit: X/100 calls this hour"
-- Alert triggers at 80% quota usage
-
-**Escalation**: If quota consistently exceeded:
-- Review email volume patterns
-- Implement email filtering (only check important/unread)
-- Consider Gmail API paid tier
-
----
-
-### 4. Disk Full
-
-**Symptoms:**
-- Logs: "No space left on device"
-- Log rotation fails
-- SQLite errors: "unable to open database file"
-
-**Diagnosis:**
+**Graceful Shutdown**:
 ```bash
-# Check disk usage
-Get-PSDrive H:
+# Create STOP file (watchers detect and shutdown)
+echo "STOP" > vault/STOP
 
-# Check log directory size
-(Get-ChildItem FTE\vault\Logs -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
-
-# Check database sizes
-dir FTE\data\*.db
+# Or use Process Manager
+# Send SIGTERM to process manager
+kill -TERM <pid>
 ```
 
-**Resolution:**
-1. **Clear Old Logs**:
-   ```bash
-   # Delete logs older than 7 days
-   Get-ChildItem FTE\vault\Logs\*.log | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-7) } | Remove-Item
-   ```
-
-2. **Vacuum Databases**:
-   ```bash
-   sqlite3 FTE\data\circuit_breakers.db "VACUUM;"
-   sqlite3 FTE\data\metrics.db "VACUUM;"
-   sqlite3 FTE\data\processed_emails.db "VACUUM;"
-   ```
-
-3. **Clear DLQ** (if safe):
-   ```bash
-   # Archive and clear failed actions
-   python src/utils/dead_letter_queue.py --archive --clear
-   ```
-
-**Prevention:**
-- Log rotation configured (100MB or daily)
-- Retention policy enforced (7 days INFO, 30 days ERROR)
-- Monitor disk usage in Dashboard.md
-
-**Escalation**: If disk fills repeatedly:
-- Increase log retention cleanup frequency
-- Move logs to separate drive
-- Enable cloud log shipping (S3, GCS, Azure Blob)
-
----
-
-### 5. Circuit Breaker OPEN
-
-**Symptoms:**
-- Logs: "Circuit breaker OPEN - skipping Gmail check"
-- API calls fail fast without network request
-- Dashboard.md shows "Circuit Breaker: OPEN"
-
-**Diagnosis:**
+**Force Stop**:
 ```bash
-# Check circuit breaker state
-sqlite3 FTE\data\circuit_breakers.db "SELECT * FROM circuit_breakers;"
-
-# Check recent failures
-Get-Content FTE\vault\Logs\app_*.log -Tail 200 | Select-String "circuit_breaker|OPEN|CLOSED"
+# Kill all Python processes (careful!)
+taskkill /F /IM python.exe  # Windows
+pkill -f "python.*watcher"  # Linux/Mac
 ```
 
-**Resolution:**
-1. **Wait for Auto-Reset**: Circuit breaker resets after 60 seconds (default)
-2. **Manual Reset**:
-   ```bash
-   python src/utils/circuit_breaker.py --reset --name gmail_watcher
-   ```
-3. **Check External Service**:
-   - Gmail API Status: https://status.cloud.google.com/
-   - WhatsApp Web: https://web.whatsapp.com/ (manual check)
+### Check System Health
 
-**Prevention:**
-- Circuit breaker threshold: 5 consecutive failures
-- Recovery timeout: 60 seconds
-- Failures logged with WARNING level
-
-**Escalation**: If circuit breaker trips repeatedly:
-- Check external service health
-- Review network connectivity
-- Increase failure threshold (if appropriate): Edit `Company_Handbook.md`
-
----
-
-### 6. High Memory Usage
-
-**Symptoms:**
-- Process Manager logs: "Watcher memory exceeds 200MB threshold"
-- System slowdown
-- Watcher killed by Process Manager
-
-**Diagnosis:**
+**Via Dashboard**:
 ```bash
-# Check memory usage
-python -c "import psutil; p = psutil.Process(<PID>); print(p.memory_info().rss / 1024 / 1024)"
-
-# Profile memory
-python -m memory_profiler src/watchers/gmail_watcher.py
+# Open Dashboard.md
+notepad vault\Dashboard.md  # Windows
+code vault/Dashboard.md     # VS Code
 ```
 
-**Resolution:**
-1. **Restart Watcher**:
-   ```bash
-   python src/process_manager.py --restart gmail_watcher
-   ```
-
-2. **Profile Memory Leak**:
-   ```bash
-   # Run with memory profiling
-   python -m memory_profiler src/watchers/gmail_watcher.py --duration 300
-   ```
-
-3. **Check for Known Issues**:
-   - Playwright browser contexts not closed (WhatsApp Watcher)
-   - SQLite connections not released
-   - Large email attachments cached in memory
-
-**Prevention:**
-- Memory threshold: 200MB (configurable)
-- Process Manager auto-kills and restarts
-- Regular restarts (daily at 3 AM)
-
-**Escalation**: If memory leak persists:
-- Profile with `memory_profiler` or `py-spy`
-- Check for unclosed resources (browser contexts, DB connections)
-- File bug with stack trace and memory profile
-
----
-
-## Monitoring & Alerting
-
-### Health Check Endpoints
-
+**Via Health Endpoint**:
 ```bash
 # Overall health
 curl http://localhost:8000/health
 
+# Component health
+curl http://localhost:8000/health | jq .components
+
 # Prometheus metrics
 curl http://localhost:8000/metrics
-
-# Readiness check
-curl http://localhost:8000/ready
 ```
 
-### Dashboard Monitoring
+**Via Command Line**:
+```bash
+# Check watcher processes
+tasklist | findstr python  # Windows
+ps aux | grep watcher      # Linux/Mac
 
-Check `FTE/vault/Dashboard.md` every 4 hours for:
-- Watcher status (UP/DOWN)
-- Circuit breaker states
-- Rate limit usage
-- Memory usage per watcher
-- Last successful check timestamp
+# Check log files
+dir vault\Logs\*.json /OD  # Windows
+ls -lt vault/Logs/*.json   # Linux/Mac
+```
 
-### Alerting Thresholds
+### Review Pending Approvals
 
-| Metric | Warning | Critical | Action |
-|--------|---------|----------|--------|
-| Watcher DOWN | >5 min | >15 min | Restart, then investigate |
-| Circuit Breaker OPEN | >1 min | >5 min | Check external service |
-| Memory Usage | >150MB | >250MB | Profile, restart if needed |
-| Rate Limit | >80% | >95% | Reduce frequency, wait for reset |
-| Disk Usage | >80% | >90% | Clear logs, expand disk |
-| Error Rate | >5/hour | >20/hour | Investigate root cause |
+**List Pending**:
+```bash
+# Windows PowerShell
+Get-ChildItem vault\Pending_Approval\*.md
 
-### Alerting Channels
+# Linux/Mac
+ls -lt vault/Pending_Approval/*.md
+```
 
-| Severity | Channel | Response Time |
-|----------|---------|---------------|
-| WARNING | Email notification | 4 hours |
-| CRITICAL | SMS/WhatsApp message | 30 minutes |
-| EMERGENCY | Phone call | 5 minutes |
+**Check Approval Status**:
+```python
+from src.skills.request_approval import check_approval
+
+status = check_approval("vault/Pending_Approval/APPROVAL_payment_123.md")
+print(f"Status: {status['status']}")
+print(f"Expires: {status['expires']}")
+```
+
+**Process Approvals**:
+```bash
+# Approve: Move to Approved/
+move vault\Pending_Approval\APPROVAL_*.md vault\Approved\
+
+# Reject: Move to Rejected/
+move vault\Pending_Approval\APPROVAL_*.md vault\Rejected\
+```
+
+### Review Dead Letter Queue
+
+**List DLQ Items**:
+```python
+from src.skills.dlq_skills import list_dlq_items
+
+# List all pending
+pending = list_dlq_items(status="pending_review")
+print(f"Pending: {len(pending)}")
+
+# List by action type
+email_failures = list_dlq_items(action_type="send_email")
+```
+
+**Resolve DLQ Item**:
+```python
+from src.skills.dlq_skills import resolve_dlq_item
+
+success = resolve_dlq_item(
+    item_id="abc-123",
+    resolution="Fixed SMTP credentials",
+    notes="Updated .env file"
+)
+```
+
+**Discard DLQ Item**:
+```python
+from src.skills.dlq_skills import discard_dlq_item
+
+success = discard_dlq_item(
+    item_id="xyz-789",
+    notes="Action no longer needed"
+)
+```
+
+### Query Audit Logs
+
+**By Date**:
+```python
+from src.skills.audit_skills import query_logs
+
+# Today's logs
+logs = query_logs(date="2026-04-02")
+
+# Date range
+logs = query_logs(date="2026-04-01:2026-04-02")
+```
+
+**By Action Type**:
+```python
+# Email sends
+emails = query_logs(action="email_sent")
+
+# Approvals
+approvals = query_logs(action="approval_requested")
+```
+
+**By Result**:
+```python
+# Failures only
+failures = query_logs(result="failure")
+
+# Get statistics
+from src.skills.audit_skills import get_log_statistics
+stats = get_log_statistics(days=7)
+print(f"Error Rate: {stats['error_rate']}%")
+```
+
+**Export to CSV**:
+```python
+from src.skills.audit_skills import query_logs, export_to_csv
+
+logs = query_logs(date="2026-04-01")
+csv_path = export_to_csv(logs, "logs_april_1.csv")
+```
+
+### Generate CEO Briefing Manually
+
+```python
+from src.skills.briefing_skills import generate_ceo_briefing
+
+result = generate_ceo_briefing()
+print(f"Briefing: {result['briefing_path']}")
+print(f"Generation time: {result['generation_time_sec']}s")
+```
+
+### Schedule/Disable CEO Briefing
+
+**Windows Task Scheduler**:
+```bash
+# Schedule (Every Monday 8 AM)
+.\scripts\schedule-ceo-briefing.bat
+
+# List scheduled tasks
+schtasks /Query /TN "FTE-CEO-Briefing"
+
+# Disable
+.\scripts\disable-ceo-briefing.bat
+
+# Remove
+.\scripts\remove-ceo-briefing.bat
+```
+
+**Linux cron**:
+```bash
+# Edit crontab
+crontab -e
+
+# Add: Every Monday 8 AM
+0 8 * * 1 cd /path/to/FTE && python -c "from src.skills.briefing_skills import generate_ceo_briefing; generate_ceo_briefing()"
+```
 
 ---
 
-## Escalation Policy
+## Troubleshooting
 
-### Level 1: Self-Service (0-15 minutes)
+### Watcher Crashed
 
-**Who**: On-duty operator  
-**Actions**:
-- Check Dashboard.md
-- Review logs
-- Restart affected watcher
-- Clear disk space if needed
+**Symptoms**:
+- Dashboard shows watcher status "DOWN" or "STOPPED"
+- No new action files created
+- Process Manager logs show restart attempts
 
-**Escalate If**: Issue persists after 2 restart attempts
+**Diagnosis**:
+```bash
+# Check Process Manager logs
+tail -f vault/Logs/YYYY-MM-DD.json | grep -i "process_manager"
+
+# Check watcher-specific logs
+grep "gmail_watcher" vault/Logs/YYYY-MM-DD.json
+```
+
+**Resolution**:
+1. **Auto-restart**: Process Manager should restart within 10 seconds
+2. **Manual restart**:
+   ```bash
+   # Stop existing (if any)
+   taskkill /F /IM python.exe /FI "WINDOWTITLE eq *gmail_watcher*"
+   
+   # Restart
+   python src/watchers/gmail_watcher.py
+   ```
+3. **Check dependencies**:
+   ```bash
+   pip install -r FTE/requirements.txt
+   playwright install chromium  # For WhatsApp
+   ```
+4. **Review error logs** for root cause
+
+**If restart fails >3/hour**:
+- Check for memory leaks
+- Review rate limits
+- Check external service health
+- Consider increasing check interval
 
 ---
 
-### Level 2: Technical Support (15-60 minutes)
+### Circuit Breaker OPEN
 
-**Who**: FTE-Agent technical lead  
-**Actions**:
-- Profile memory/CPU usage
-- Check external service status
-- Review circuit breaker logs
-- Manual database queries
+**Symptoms**:
+- `CircuitBreakerOpenError` exceptions
+- Dashboard shows circuit breaker "OPEN" for service
+- Actions failing immediately without retry
 
-**Escalate If**: Root cause unknown or requires code fix
+**Diagnosis**:
+```python
+from src.utils.circuit_breaker import get_circuit_breaker
+
+cb = get_circuit_breaker("gmail")
+print(f"State: {cb.get_state()}")
+print(f"Failure count: {cb.failure_count}")
+```
+
+**Resolution**:
+1. **Check external service**:
+   ```bash
+   # Gmail API
+   curl https://www.googleapis.com/gmail/v1/users/me/profile
+   
+   # Odoo
+   curl http://localhost:8069/jsonrpc -d '{"jsonrpc":"2.0","method":"call","params":{"service":"common","method":"version"},"id":1}'
+   ```
+
+2. **Wait for auto-reset** (300 seconds / 5 minutes)
+
+3. **Manual reset**:
+   ```bash
+   curl -X POST http://localhost:8000/health/reset?component=gmail
+   ```
+
+4. **If service is healthy**:
+   - Check network connectivity
+   - Verify credentials
+   - Review recent code changes
 
 ---
 
-### Level 3: Engineering (1-4 hours)
+### DLQ Size Growing
 
-**Who**: FTE-Agent engineering team  
-**Actions**:
-- Code debugging
-- Performance profiling
-- External API vendor contact
-- Hotfix deployment
+**Symptoms**:
+- Alert: "DLQ size (X) exceeds threshold (10)"
+- Increasing failed actions
+- Same failure pattern repeating
 
-**Escalate If**: System-wide outage or data loss
+**Diagnosis**:
+```python
+from src.skills.dlq_skills import list_dlq_items, get_dlq_summary
+
+summary = get_dlq_summary()
+print(f"Total: {summary['total_failed']}")
+print(f"By type: {summary['by_action_type']}")
+
+# Find common failure pattern
+failures = list_dlq_items(limit=50)
+for f in failures[:5]:
+    print(f"Action: {f['original_action']}, Reason: {f['failure_reason']}")
+```
+
+**Resolution**:
+1. **Identify pattern**: Group by `failure_reason`
+2. **Fix root cause**:
+   - Credential issues → Update .env
+   - Rate limits → Wait or increase limits
+   - Service down → Restart service
+3. **Bulk resolve**:
+   ```python
+   from src.skills.dlq_skills import resolve_dlq_item
+   
+   for item in list_dlq_items(status="pending_review"):
+       resolve_dlq_item(item['id'], "Bulk resolution after fix")
+   ```
 
 ---
 
-### Level 4: Management (4+ hours)
+### Odoo Fallback Active
 
-**Who**: Product owner, engineering manager  
-**Actions**:
-- Business impact assessment
-- Vendor escalation (Google, Meta)
-- Customer communication
-- Disaster recovery activation
+**Symptoms**:
+- Dashboard shows "Odoo Fallback: ACTIVE"
+- Transactions queued in `vault/Odoo_Queue/`
+- Fallback logs in `vault/Odoo_Fallback/`
+
+**Diagnosis**:
+```python
+from src.services.odoo_fallback import get_odoo_fallback_manager
+
+fallback = get_odoo_fallback_manager()
+stats = fallback.get_fallback_stats()
+print(f"Queued: {stats['queued_count']}")
+print(f"Synced: {stats['synced_count']}")
+```
+
+**Resolution**:
+1. **Check Odoo availability**:
+   ```bash
+   curl http://localhost:8069/jsonrpc -d '{"jsonrpc":"2.0","method":"call","params":{"service":"common","method":"version"},"id":1}'
+   ```
+
+2. **If Odoo down**: Start/restart Odoo service
+   ```bash
+   # Windows service
+   net start odoo
+   
+   # Linux systemd
+   systemctl start odoo
+   ```
+
+3. **If Odoo up but unreachable**:
+   - Check network/firewall
+   - Verify Odoo URL in .env
+   - Check database credentials
+
+4. **Manual sync**:
+   ```python
+   from src.services.odoo_fallback import sync_queued_transactions
+   
+   result = sync_queued_transactions()
+   print(f"Synced: {result['synced']}, Failed: {result['failed']}")
+   ```
+
+---
+
+### Social Media Drafts Accumulating
+
+**Symptoms**:
+- Posts not going through
+- Drafts accumulating in `vault/Drafts/`
+- Rate limit errors in logs
+
+**Diagnosis**:
+```python
+from src.services.social_fallback import get_social_fallback_manager
+
+fallback = get_social_fallback_manager()
+stats = fallback.get_fallback_stats()
+print(f"Platform stats: {stats['platforms']}")
+```
+
+**Resolution**:
+1. **Check rate limits**:
+   - LinkedIn: 1 post/day
+   - Twitter: 300 posts/15 min
+   - Facebook: 200 calls/hour
+   - Instagram: 25 posts/day
+
+2. **Wait for reset window**
+
+3. **Manual sync**:
+   ```python
+   from src.services.social_fallback import sync_drafts
+   
+   result = sync_drafts(platform="linkedin")
+   print(f"Posted: {result['posted']}, Failed: {result['failed']}")
+   ```
+
+4. **If API issue**:
+   - Check API credentials
+   - Verify session tokens
+   - Review platform API status
+
+---
+
+### WhatsApp Session Expired
+
+**Symptoms**:
+- `SessionExpiredError` exceptions
+- WhatsApp Web requires QR scan
+- Messages not sending
+
+**Resolution**:
+1. **Re-authenticate**:
+   ```bash
+   python scripts/auth/whatsapp_auth.py
+   ```
+
+2. **Scan QR code** with WhatsApp mobile app
+
+3. **Verify session saved**:
+   ```bash
+   dir vault\State\whatsapp_session\
+   ```
+
+4. **Test connection**:
+   ```python
+   from src.skills.whatsapp_skills import send_whatsapp
+   
+   result = send_whatsapp("+1234567890", "Test message")
+   print(f"Status: {result['status']}")
+   ```
+
+---
+
+### Gmail API Auth Failure
+
+**Symptoms**:
+- `google.auth.exceptions.RefreshError`
+- Emails not sending
+- 401 Unauthorized errors
+
+**Resolution**:
+1. **Check credentials**:
+   ```bash
+   # Verify file exists
+   dir credentials\gmail_credentials.json
+   ```
+
+2. **Re-authenticate**:
+   ```bash
+   python scripts/auth/gmail_auth.py
+   ```
+
+3. **Verify scopes in .env**:
+   ```
+   GMAIL_SCOPES=https://www.googleapis.com/auth/gmail.send,https://www.googleapis.com/auth/gmail.readonly
+   ```
+
+4. **Check API enabled**:
+   - Go to Google Cloud Console
+   - Verify Gmail API is enabled
+
+---
+
+### High Memory Usage
+
+**Symptoms**:
+- Memory >500MB total
+- Individual watchers >200MB
+- System slowing down
+
+**Diagnosis**:
+```bash
+# Windows
+tasklist /V | findstr python
+
+# Linux/Mac
+ps aux | grep watcher | awk '{print $2, $6}'
+```
+
+**Resolution**:
+1. **Restart high-memory watchers**:
+   ```bash
+   # Stop specific watcher
+   taskkill /F /FI "WINDOWTITLE eq *gmail_watcher*"
+   
+   # Restart
+   python src/watchers/gmail_watcher.py
+   ```
+
+2. **If persists**: Profile for memory leaks
+   ```bash
+   pip install memory_profiler
+   python -m memory_profiler src/watchers/gmail_watcher.py
+   ```
+
+3. **Consider reducing check frequency** in watcher config
 
 ---
 
 ## Maintenance Procedures
 
-### Daily Checks (8:00 AM)
+### Daily Checks
 
-- [ ] Review Dashboard.md for overnight issues
-- [ ] Check disk space usage
-- [ ] Verify all watchers UP
-- [ ] Review ERROR logs from past 24 hours
+**Checklist**:
+- [ ] Review Dashboard.md for alerts
+- [ ] Check pending approvals (>24h old?)
+- [ ] Review DLQ size (<10?)
+- [ ] Verify all watchers running
+- [ ] Check disk space (>10GB free?)
 
-### Weekly Checks (Sunday 10:00 PM)
+**Commands**:
+```bash
+# Quick health check
+curl http://localhost:8000/health | jq .status
 
-- [ ] Run weekly audit (automated)
-- [ ] Review rate limit patterns
-- [ ] Check circuit breaker trip frequency
-- [ ] Vacuum SQLite databases
-- [ ] Clear logs older than 7 days
+# Check approvals
+Get-ChildItem vault\Pending_Approval\*.md | Where-Object {$_.LastWriteTime -lt (Get-Date).AddHours(-24)}
 
-### Monthly Checks (1st of month)
+# Check DLQ
+python -c "from src.skills.dlq_skills import get_dlq_summary; print(get_dlq_summary()['total_failed'])"
+```
 
-- [ ] Rotate OAuth tokens
-- [ ] Review memory leak patterns
-- [ ] Update dependencies (pip install --upgrade)
-- [ ] Review and update runbook
-- [ ] Test disaster recovery procedure
+### Weekly Checks
+
+**Checklist**:
+- [ ] Review log statistics (error rate <5%?)
+- [ ] Audit subscription usage
+- [ ] Check circuit breaker history
+- [ ] Review watcher restart counts
+- [ ] Verify backup integrity
+
+**Commands**:
+```python
+from src.skills.audit_skills import get_log_statistics
+
+stats = get_log_statistics(days=7)
+print(f"Error Rate: {stats['error_rate']}%")
+print(f"Total Entries: {stats['total_entries']}")
+```
+
+### Monthly Maintenance
+
+**Checklist**:
+- [ ] Rotate credentials (if policy requires)
+- [ ] Clear old logs (>90 days)
+- [ ] Review and archive DLQ items
+- [ ] Update dependencies
+- [ ] Review performance metrics
+- [ ] Test disaster recovery
+
+**Commands**:
+```bash
+# Clear old logs (careful!)
+# Keep last 90 days
+find vault/Logs/*.json -mtime +90 -delete  # Linux/Mac
+
+# Update dependencies
+pip install --upgrade -r FTE/requirements.txt
+
+# Run tests
+pytest --cov=src
+```
+
+### Log Rotation
+
+**Automatic**: Daily at midnight (built into AuditLogger)
+
+**Manual** (if needed):
+```bash
+# Archive current logs
+mkdir vault/Logs/archive/YYYY-MM
+move vault\Logs\*.json vault\Logs\archive\YYYY-MM\
+
+# Clear old archives (>90 days)
+```
+
+### Database Backup
+
+**SQLite Databases**:
+```bash
+# Backup all databases
+mkdir backups
+copy FTE\data\*.db backups\
+copy vault\State\*.json backups\
+
+# Compress
+7z a backups\backup_YYYY-MM-DD.zip backups\*
+```
+
+### Credential Rotation
+
+**Schedule**: Monthly or after suspected breach
+
+**Process**:
+1. Generate new credentials in respective developer consoles
+2. Update `.env` file
+3. Restart affected watchers
+4. Test each integration
+5. Archive old credentials securely
 
 ---
 
-## Contact Information
+## Security Disclosure
 
-| Role | Name | Email | Phone |
-|------|------|-------|-------|
-| On-Call Operator | [TBD] | [TBD] | [TBD] |
-| Technical Lead | [TBD] | [TBD] | [TBD] |
-| Engineering Manager | [TBD] | [TBD] | [TBD] |
-| Product Owner | [TBD] | [TBD] | [TBD] |
+### Credential Handling
+
+**Storage**:
+- ✅ `.env` file (gitignored via `.gitignore`)
+- ✅ Windows Credential Manager / macOS Keychain
+- ✅ Environment variables for cloud deployments
+
+**Never Store**:
+- ❌ Source code
+- ❌ Obsidian vault
+- ❌ Log files
+- ❌ Version control
+
+**Rotation**:
+- Frequency: Monthly or after breach
+- Process: Generate new → Update .env → Restart services → Test
 
 ---
 
-## Revision History
+### Human-in-the-Loop (HITL) Boundaries
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0.0 | 2026-03-19 | FTE-Agent Team | Initial Bronze tier runbook |
-| 2.0.0 | 2026-04-02 | FTE-Agent Team | Silver tier update: Gmail/WhatsApp watchers, circuit breakers, health endpoint |
+**Require Human Approval**:
+- Payments >$500 (configurable)
+- First-time invoice recipients
+- Social media posts (optional, can be auto-approved for trusted content)
+- Any action with `risk_level="high"`
+
+**Auto-Approved**:
+- Replies to internal emails
+- Invoice generation for known clients
+- Scheduled social posts (if pre-approved)
+- Low-risk routine tasks
+
+**Approval Expiry**:
+- Standard: 24 hours
+- After expiry: Auto-reject with notification
 
 ---
 
-**Next Review Date**: 2026-05-02  
-**Document Owner**: FTE-Agent Team  
-**Approval Status**: ✅ Production Ready
+### dry_run Mode Behavior
+
+**When DRY_RUN=true**:
+- All external actions logged but NOT executed
+- Emails: Content logged, not sent
+- Payments: Details logged, not processed
+- Posts: Content logged, not published
+
+**Use Cases**:
+- Testing new workflows
+- Auditing existing processes
+- Training/demonstrations
+- Debugging issues
+
+**Enable**:
+```bash
+# In .env
+DRY_RUN=true
+
+# Or command line
+export DRY_RUN=true
+python src/watchers/gmail_watcher.py
+```
+
+---
+
+### DEV_MODE Kill Switch
+
+**Purpose**: Prevent accidental external actions
+
+**When DEV_MODE=false**:
+- All external API calls blocked
+- Clear error: "DEV_MODE not enabled"
+- Logs show attempted actions
+
+**Enable for Production**:
+```bash
+# In .env
+DEV_MODE=true
+```
+
+**Testing Without DEV_MODE**:
+```bash
+# Safe testing
+DRY_RUN=true
+DEV_MODE=false  # Will log but not execute
+```
+
+---
+
+### Audit Trail
+
+**What's Logged**:
+- All external API calls
+- All approval requests
+- All state changes
+- All errors and failures
+- All watcher actions
+
+**Log Location**: `vault/Logs/YYYY-MM-DD.json`
+
+**Retention**: 90 days (automatic)
+
+**Query**:
+```python
+from src.skills.audit_skills import query_logs
+
+# All actions today
+today = query_logs(date="2026-04-02")
+
+# All failures
+failures = query_logs(result="failure")
+
+# Export for audit
+export_to_csv(today, "audit_export.csv")
+```
+
+---
+
+### Access Control
+
+**Filesystem Permissions**:
+- Vault: Read/write for service account only
+- .env: Read-only for service account
+- Logs: Append-only for service account
+
+**Network**:
+- Health endpoint: localhost only (default)
+- Odoo: Local network or localhost
+- External APIs: Outbound only
+
+---
+
+## Emergency Procedures
+
+### Complete System Shutdown
+
+**Graceful**:
+```bash
+# Create STOP file
+echo "STOP" > vault/STOP
+
+# Wait for watchers to detect (up to 60 seconds)
+timeout /t 60  # Windows
+sleep 60       # Linux/Mac
+
+# Verify all stopped
+tasklist | findstr watcher
+```
+
+**Emergency**:
+```bash
+# Kill all Python processes
+taskkill /F /IM python.exe  # Windows
+pkill -9 python             # Linux/Mac
+
+# Verify
+tasklist | findstr python
+```
+
+### Data Recovery
+
+**From Backup**:
+```bash
+# Stop all services first
+# Restore databases
+copy backups\*.db FTE\data\
+
+# Restore state files
+copy backups\*.json vault\State\
+
+# Restart services
+```
+
+**Corrupted Logs**:
+- Logs are JSON lines format (resilient to corruption)
+- If file corrupted: Rename, create new, attempt recovery
+
+**Corrupted Database**:
+```bash
+# SQLite recovery
+sqlite3 data/failed_actions.db ".recover" > recovery.sql
+sqlite3 data/failed_actions.db.new < recovery.sql
+move /Y data\failed_actions.db.new data\failed_actions.db
+```
+
+### Service Outage Response
+
+**External Service Down** (Gmail, Odoo, Social):
+1. Activate fallback (automatic)
+2. Monitor DLQ for queued actions
+3. Communicate ETA to users
+4. Resume when service restored
+
+**Internal Service Down** (Watcher, MCP):
+1. Process Manager auto-restarts
+2. If restart fails, investigate logs
+3. Manual restart if needed
+4. Escalate if pattern emerges
+
+### Security Incident Response
+
+**Suspected Breach**:
+1. **Immediate**: Disable DEV_MODE
+   ```bash
+   # In .env
+   DEV_MODE=false
+   ```
+
+2. **Rotate all credentials**:
+   - Gmail API
+   - Odoo
+   - Social media
+   - Any other integrations
+
+3. **Review audit logs**:
+   ```python
+   from src.skills.audit_skills import query_logs, search_logs
+   
+   # Search for suspicious activity
+   suspicious = search_logs(query="unauthorized", field="error")
+   ```
+
+4. **Notify stakeholders**
+
+5. **Document incident**
+
+---
+
+## Contact and Escalation
+
+### Support Channels
+
+- **Documentation**: `FTE/docs/`
+- **Logs**: `vault/Logs/`
+- **Dashboard**: `vault/Dashboard.md`
+- **Health Endpoint**: `http://localhost:8000/health`
+
+### Escalation Path
+
+1. **Level 1**: Review this runbook
+2. **Level 2**: Check documentation
+3. **Level 3**: Contact development team
+4. **Level 4**: Emergency incident response
+
+---
+
+*Generated by FTE-Agent Development Team*  
+*Last Updated: 2026-04-02*
