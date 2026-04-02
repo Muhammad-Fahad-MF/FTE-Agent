@@ -6,53 +6,95 @@ This file configures the Spec-Driven Development workflow for the FTE-Agent proj
 
 ---
 
-## Current Development Focus: Silver Tier Functional Assistant
+## Current Development Focus: Gold Tier Autonomous Employee
 
-**Branch:** `002-silver-tier-functional-assistant`  
-**Status:** Tasks generated (tasks.md ready for implementation)  
-**Next Step:** Begin Phase 1 implementation (T001-T012: Foundation Extension)  
+**Branch:** `003-gold-tier-autonomous-employee` (to be created)
+**Status:** ✅ Silver Tier COMPLETE - Ready for Gold Tier planning
+**Next Step:** Create Gold Tier spec/plan/tasks (G1-G12: 54 hours estimated)
 
-### Silver Tier Overview
+### ✅ Silver Tier Completion Summary (v2.0.0)
 
-| Component | Status | Location |
+| Component | Status | Evidence |
 |-----------|--------|----------|
 | **Spec** | ✅ Complete (v2.0.0) | `specs/002-silver-tier-functional-assistant/spec.md` |
 | **Plan** | ✅ Complete (v2.0.0) | `specs/002-silver-tier-functional-assistant/plan.md` |
-| **Tasks** | ✅ Complete (115 tasks) | `specs/002-silver-tier-functional-assistant/tasks.md` |
-| **Implementation** | ⏳ Pending | Phase 1: T001-T012 |
+| **Tasks** | ✅ Complete (115/115) | `specs/002-silver-tier-functional-assistant/tasks.md` |
+| **Implementation** | ✅ Complete | All phases T001-T115 implemented |
+| **Tests** | ✅ 85%+ coverage | 44 test files (unit, integration, chaos, load, endurance) |
+| **Quality Gates** | ✅ Passing | ruff, black, mypy, bandit, isort |
+| **Documentation** | ✅ Complete | README, runbook, DR plan, deployment checklist |
+| **Production Status** | ✅ READY | v2.0.0 released (2026-04-02) |
 
-### Silver Tier Features (S1-S9)
+### ✅ Silver Tier Features Delivered (S1-S9)
 
-- **S1:** Gmail Watcher (2-min interval, circuit breaker, metrics)
-- **S2:** WhatsApp Watcher (30-sec interval, keyword filtering, session preservation)
-- **S3:** Process Manager (auto-restart within 10s, restart limits)
-- **S4:** Plan Generation (YAML frontmatter, status tracking)
-- **S5:** Email Skill (Gmail API, approval for new contacts, --dry-run)
-- **S6:** HITL Approval Workflow (24-hour expiry, 5-sec detection)
-- **S7:** LinkedIn Posting (Playwright, session recovery, 1 post/day)
-- **S8:** Basic Scheduling (daily briefing 8 AM, weekly audit Sunday 10 PM)
-- **S9:** Agent Skills Documentation (7+ skills documented)
+- **S1:** ✅ Gmail Watcher (2-min interval, circuit breaker, SQLite persistence)
+- **S2:** ✅ WhatsApp Watcher (30-sec interval, keyword filtering, session preservation)
+- **S3:** ✅ Process Manager (auto-restart <10s, restart limits, memory monitoring)
+- **S4:** ✅ Plan Generation (YAML frontmatter, status tracking, file locking)
+- **S5:** ✅ Email Skill (Gmail API OAuth2, approval workflow, --dry-run)
+- **S6:** ✅ HITL Approval Workflow (24-hour expiry, 5-sec detection, DLQ)
+- **S7:** ✅ LinkedIn Posting (Playwright, session recovery, 1 post/day)
+- **S8:** ✅ Basic Scheduling (daily briefing 8 AM, weekly audit Sunday 10 PM)
+- **S9:** ✅ Agent Skills Documentation (7+ skills in `skills_index.md`)
 
-### Implementation Phases
+### 🎯 Gold Tier Features (G1-G12) - 54 Hours Estimated
 
-1. **Phase 1:** Foundation Extension (T001-T012) - Circuit breaker, metrics, logging, DLQ
-2. **Phase 2:** Perception Layer (T013-T041) - Gmail, WhatsApp, Process Manager
-3. **Phase 3:** Reasoning Layer (T042-T062) - create_plan, request_approval, generate_briefing
-4. **Phase 4:** Action Layer (T063-T084) - send_email, linkedin_posting, DLQ integration
-5. **Phase 5:** Production Readiness (T085-T115) - Health endpoint, load/endurance tests, docs
+| ID | Feature | Priority | Hours | Description |
+|----|---------|----------|-------|-------------|
+| **G1** | Odoo Accounting | P0 | 8h | Self-hosted Odoo Community v19+ with JSON-RPC API |
+| **G2** | Facebook Integration | P1 | 4h | Post messages + analytics summaries |
+| **G3** | Instagram Integration | P1 | 4h | Post messages + analytics summaries |
+| **G4** | Twitter/X Integration | P1 | 4h | Post messages + analytics summaries |
+| **G5** | CEO Briefing | P0 | 6h | Weekly business audit with revenue tracking |
+| **G6** | Ralph Wiggum Loop | P0 | 6h | Autonomous multi-step task completion |
+| **G7** | Multiple MCP Servers | P1 | 4h | Odoo, Social, Browser, Calendar MCPs |
+| **G8** | Error Recovery | P1 | 4h | Advanced retry, circuit breaker, fallback |
+| **G9** | Audit Logging | P1 | 3h | Enhanced logging with search/reporting |
+| **G10** | Cross-Domain | P2 | 4h | Personal + Business unification |
+| **G11** | Analytics Dashboard | P2 | 4h | Real-time metrics visualization |
+| **G12** | Documentation | P2 | 3h | Architecture, deployment, lessons learned |
 
-### Quick Commands for Silver Tier
+### Gold Tier Implementation Phases
+
+1. **Phase 1:** Core Accounting (G1, G5) - 14h - Odoo + CEO Briefing
+2. **Phase 2:** Social Media (G2, G3, G4) - 12h - Facebook, Instagram, Twitter
+3. **Phase 3:** Autonomous Ops (G6, G8) - 10h - Ralph Wiggum + error recovery
+4. **Phase 4:** Infrastructure (G7, G9, G10, G11) - 15h - MCPs, logging, dashboard
+5. **Phase 5:** Documentation (G12) - 3h - Complete documentation suite
+
+### Quick Commands for Gold Tier
 
 ```bash
-# Start Phase 1 implementation
-qwen "Implement T001: Extend vault structure with 7 new folders per tasks.md"
+# Create Gold Tier branch
+git checkout -b 003-gold-tier-autonomous-employee
 
-# Create PHR for task
-qwen "Create PHR for T001 completion in history/prompts/002-silver-tier-functional-assistant/"
+# Start Gold Tier specification
+qwen "Create Gold Tier spec.md per Personal_AI_Employee_Hackathon.md G1-G12"
+
+# Create Gold Tier architecture plan
+qwen "Create Gold Tier plan.md with Odoo, social media, Ralph Wiggum architecture"
+
+# Generate Gold Tier tasks
+qwen "Generate Gold Tier tasks.md (G1-G12) with acceptance criteria"
 
 # Run quality gates
 cd FTE && ruff check src/ && black --check src/ && mypy --strict src/ && pytest --cov=src
 ```
+
+### Gold Tier Prerequisites
+
+**Technical Setup (before starting):**
+- [ ] Install Odoo Community v19+ (2h) - https://www.odoo.com/documentation
+- [ ] Facebook Developer Account (1h) - Graph API access
+- [ ] Twitter Developer Account (1h) - API v2 access
+- [ ] Review Odoo JSON-RPC API docs - https://www.odoo.com/documentation/19.0/developer/reference/external_api.html
+
+**Silver Tier Components (must be operational):**
+- ✅ Gmail Watcher running
+- ✅ WhatsApp Watcher running
+- ✅ Process Manager healthy
+- ✅ Approval workflow functional
+- ✅ Health endpoint at localhost:8000
 
 ---
 
@@ -88,8 +130,9 @@ qwen --model qwen3-coder-plus "prompt"
 
 **For FTE-Agent Development:**
 - **Bronze Tier**: No MCP needed - use Python file I/O for all operations
-- **Silver/Gold Tiers**: Use direct Python integrations (smtplib, requests, playwright) instead of MCP
-- **Pattern**: Implement "Python Skills" in `src/skills.py` for reusable functionality
+- **Silver Tier**: Use direct Python integrations (smtplib, requests, playwright) instead of MCP
+- **Gold Tier**: Use Python Skills pattern for Odoo (JSON-RPC), social media APIs (Graph API, Twitter API v2)
+- **Pattern**: Implement "Python Skills" in `src/skills/` for reusable functionality
 
 ### Command Equivalents
 
@@ -98,14 +141,17 @@ qwen --model qwen3-coder-plus "prompt"
 | `claude "prompt"` | `qwen "prompt"` | Same interactive workflow |
 | `/sp.*` commands | `qwen "/sp.*"` | Works via this QWEN.md config |
 | MCP filesystem | ❌ Not supported | Use Python `pathlib` directly |
-| MCP email | ❌ Not supported | Use Python `smttplib` or `src/skills.py` |
+| MCP email | ❌ Not supported | Use Python `smtplib` or `src/skills/send_email.py` |
+| MCP Odoo | ❌ Not supported | Use Python `requests` with JSON-RPC |
+| MCP Social | ❌ Not supported | Use Python `requests` with Graph/Twitter API |
 
 ### Development Workflow
 
 1. **Spec-Driven**: All features follow Spec → Plan → Tasks → Implementation → Tests
-2. **Python Skills**: Reusable functions in `src/skills.py` replace MCP server functionality
+2. **Python Skills**: Reusable functions in `src/skills/` replace MCP server functionality
 3. **Direct File I/O**: Use Python `pathlib` for vault file operations
 4. **Free Tier Aware**: Batch related requests to minimize API call count (1,000/day limit)
+5. **Gold Tier Pattern**: External APIs via Python `requests` (Odoo JSON-RPC, Facebook Graph, Twitter API v2)
 
 ## Task context
 
@@ -216,7 +262,7 @@ You are not expected to solve every problem autonomously. You MUST invoke the us
 1.  **Ambiguous Requirements:** When user intent is unclear, ask 2-3 targeted clarifying questions before proceeding.
 2.  **Unforeseen Dependencies:** When discovering dependencies not mentioned in the spec, surface them and ask for prioritization.
 3.  **Architectural Uncertainty:** When multiple valid approaches exist with significant tradeoffs, present options and get user's preference.
-4.  **Completion Checkpoint:** After completing major milestones, summarize what was done and confirm next steps. 
+4.  **Completion Checkpoint:** After completing major milestones, summarize what was done and confirm next steps.
 
 ## Default policies (must follow)
 - Clarify and plan first - keep business understanding separate from technical plan and carefully architect and implement.
@@ -311,3 +357,105 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+
+---
+
+## Gold Tier Quick Reference
+
+### Key Resources
+
+| Resource | URL | Purpose |
+|----------|-----|---------|
+| **Odoo Docs** | https://www.odoo.com/documentation | Odoo Community setup & API |
+| **Odoo JSON-RPC** | https://www.odoo.com/documentation/19.0/developer/reference/external_api.html | API reference |
+| **Facebook Graph** | https://developers.facebook.com/docs/graph-api | Facebook/Instagram posts |
+| **Twitter API v2** | https://developer.twitter.com/en/docs/twitter-api | Twitter/X integration |
+| **Why Odoo** | https://chatgpt.com/share/6967deaf-9404-8001-9ad7-03017255ebaf | ERP value proposition |
+
+### Gold Tier Architecture Patterns
+
+**Odoo Integration (G1):**
+```python
+# Python Skill pattern for Odoo JSON-RPC
+import requests
+
+def odoo_rpc_call(model, method, args, kwargs):
+    """Call Odoo JSON-RPC API"""
+    url = "http://localhost:8069/jsonrpc"
+    payload = {
+        "jsonrpc": "2.0",
+        "method": "call",
+        "params": {
+            "service": "object",
+            "db": "odoo_db",
+            "uid": 2,  # admin user
+            "password": "admin",
+            "model": model,
+            "method": method,
+            "args": args,
+            "kwargs": kwargs
+        }
+    }
+    response = requests.post(url, json=payload)
+    return response.json().get("result")
+```
+
+**Ralph Wiggum Loop (G6):**
+```python
+# Stop hook pattern for autonomous iteration
+def ralph_wiggum_stop_hook(output, task_file):
+    """Intercept Claude exit and re-inject if task incomplete"""
+    if not is_task_complete(task_file):
+        block_exit()
+        reinject_prompt(output)
+        return False  # Don't allow exit
+    return True  # Allow exit
+```
+
+**CEO Briefing Template (G5):**
+```markdown
+# Monday Morning CEO Briefing
+
+## Executive Summary
+[One-paragraph overview]
+
+## Revenue
+- **This Week**: $X,XXX
+- **MTD**: $X,XXX (XX% of target)
+- **Trend**: On track / Behind / Ahead
+
+## Completed Tasks
+- [x] Task 1
+- [x] Task 2
+
+## Bottlenecks
+| Task | Expected | Actual | Delay |
+|------|----------|--------|-------|
+| ... | ... | ... | ... |
+
+## Proactive Suggestions
+### Cost Optimization
+- [ACTION] Suggestion
+
+## Upcoming Deadlines
+- Project: Date
+```
+
+### Gold Tier Success Metrics
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Odoo Integration | 100% invoice workflow | Test suite |
+| Social Media Posts | 4 platforms | Manual verification |
+| CEO Briefing Accuracy | 95% revenue tracking | User validation |
+| Ralph Loop Completion | 90% autonomous tasks | Audit logs |
+| Error Recovery | 99% auto-recovery | Chaos tests |
+| Test Coverage | 85%+ | pytest --cov |
+| Quality Gates | 0 errors | ruff, black, mypy, bandit |
+
+---
+
+**Last Updated**: 2026-04-02
+**Silver Tier**: ✅ COMPLETE (v2.0.0)
+**Gold Tier**: 🎯 READY TO START (v3.0.0)
+**Next Action**: Create Gold Tier branch and spec
