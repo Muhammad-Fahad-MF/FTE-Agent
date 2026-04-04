@@ -1,4 +1,4 @@
-# Qwen Code Rules - FTE-Agent Development
+﻿# Qwen Code Rules - FTE-Agent Development
 
 **AI Reasoning Engine**: Qwen Code CLI (Free OAuth Tier - 1,000 calls/day)
 

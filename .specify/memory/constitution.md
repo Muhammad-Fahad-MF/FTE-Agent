@@ -711,4 +711,316 @@ All PRs and reviews MUST verify compliance with this constitution. Use `.specify
 4. Ralph Wiggum pattern validation (autonomous task completion test)
 5. Multi-MCP coordination test (5+ MCPs running concurrently)
 
-**Version**: 5.0.0 | **Ratified**: 2026-04-02 | **Last Amended**: 2026-04-02 (Gold Tier preparation)
+**Version**: 6.0.0 | **Ratified**: 2026-04-02 | **Last Amended**: 2026-04-02 (Platinum Tier preparation)
+
+---
+
+## Platinum Tier Architecture
+
+### XIV. Platinum Tier: Cloud + Local Executive (Production-Ready)
+
+**Architecture Overview**:
+Platinum Tier extends Gold Tier with a two-agent architecture: Cloud Agent (24/7 always-on) and Local Agent (user workstation). This enables continuous operation while maintaining strict security boundaries for sensitive operations.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ CLOUD AGENT (24/7 VM: Oracle/AWS/Google Cloud)                  │
+├─────────────────────────────────────────────────────────────────┤
+│ Responsibilities (DRAFT-ONLY):                                  │
+│ - Email triage + draft replies (requires Local approval)        │
+│ - Social post drafts/scheduling (requires Local approval)       │
+│ - Odoo draft invoices (requires Local approval to post)         │
+│ - Monitoring + alerting (health checks, metrics)                │
+│                                                                 │
+│ Writes to: /Updates/<domain>/, /Signals/<domain>/               │
+│ NEVER stores: WhatsApp sessions, banking creds, payment tokens  │
+└────────────────────┬────────────────────────────────────────────┘
+                     │
+                     ▼  Vault Sync (Git/Syncthing)
+                     │  Excludes: .env, tokens, sessions, creds
+┌────────────────────┴────────────────────────────────────────────┐
+│ LOCAL AGENT (User Workstation)                                  │
+├─────────────────────────────────────────────────────────────────┤
+│ Responsibilities (EXECUTION AUTHORITY):                         │
+│ - Final approvals (move files to Approved/)                     │
+│ - WhatsApp session (browser automation)                         │
+│ - Payments/banking (final execution)                            │
+│ - Send/post actions (Email MCP, Social MCP)                     │
+│ - Merge Cloud updates into Dashboard.md (single-writer rule)    │
+│                                                                 │
+│ Stores secrets in: OS Credential Manager (never in vault)       │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**P1: Cloud 24/7 Deployment Requirements**:
+- Cloud Agent MUST run on cloud VM (Oracle Cloud Free Tier, AWS EC2, or Google Cloud)
+- MUST achieve 99% uptime SLA (measured via health endpoint)
+- MUST implement auto-restart on crash (systemd or PM2)
+- MUST expose health endpoint at `http://<vm-ip>:8000/health`
+- MUST implement resource monitoring (CPU <80%, Memory <80%, Disk <90%)
+- MUST alert Local Agent on threshold breaches via `/Alerts/` files
+
+**P2: Work-Zone Specialization**:
+- **Cloud owns** (draft-only, requires Local approval):
+  - Email triage: Categorize, draft replies, flag urgent
+  - Social media: Draft posts, schedule (no auto-post)
+  - Odoo accounting: Draft invoices, categorize expenses
+  - Monitoring: Health checks, metrics collection
+- **Local owns** (execution authority):
+  - Approvals: Move files from `Pending_Approval/` to `Approved/`
+  - WhatsApp: Session management, message sending
+  - Payments: Bank API calls, payment execution
+  - Send/Post: Email send, social media posting
+  - Dashboard: Single-writer rule (Local merges Cloud updates)
+
+**P3: Delegation via Synced Vault**:
+- **Folder Structure**:
+  - `/Needs_Action/<domain>/` - Domain-specific action files (Cloud + Local)
+  - `/Plans/<domain>/` - Domain-specific plans
+  - `/Pending_Approval/<domain>/` - Domain-specific approvals
+  - `/In_Progress/<agent>/` - Per-agent claim files (Cloud/Local)
+  - `/Updates/<domain>/` - Cloud writes status updates here
+  - `/Signals/<domain>/` - Cloud writes alerts/notifications here
+- **Claim-by-Move Rule**:
+  - First agent to move file from `/Needs_Action/` to `/In_Progress/<agent>/` owns it
+  - Other agents MUST ignore claimed files (check every 60 seconds)
+  - Prevents double-work across Cloud/Local agents
+- **Single-Writer Rule**:
+  - ONLY Local Agent MAY write to `Dashboard.md`
+  - Cloud Agent writes to `/Updates/` and `/Signals/`
+  - Local Agent merges updates into Dashboard.md every 5 minutes
+- **Vault Sync Mechanism**:
+  - MUST use Git (recommended) or Syncthing
+  - Sync frequency: Every 60 seconds (configurable)
+  - Conflict resolution: Last-write-wins for action files, Local-wins for Dashboard.md
+
+**P4: Security Boundaries (CRITICAL)**:
+- **Vault Sync Exclusions** (via .gitignore):
+  - `.env` - Environment variables with secrets
+  - `*.session` - WhatsApp/browser session files
+  - `tokens/` - API tokens and OAuth credentials
+  - `banking/` - Banking credentials and payment tokens
+  - `credentials/` - Any credential files
+- **Cloud Agent NEVER has access to**:
+  - WhatsApp Web session (browser cookies, local storage)
+  - Banking API credentials (username, password, API keys)
+  - Payment tokens (Stripe, PayPal, bank transfer credentials)
+  - Email SMTP credentials (for sending, not reading)
+  - Social media posting credentials (Facebook, Twitter, LinkedIn)
+- **Local Agent MUST**:
+  - Store all secrets in OS Credential Manager (Windows Credential Manager, macOS Keychain, 1Password CLI)
+  - Never sync secrets to cloud via Git/Syncthing
+  - Validate all Cloud-sourced actions before execution
+  - Maintain separate .env file (not synced)
+
+**P5: Cloud Odoo Deployment**:
+- Odoo Community v19+ MUST be deployed on separate cloud VM (or same VM with Docker isolation)
+- MUST configure HTTPS with valid SSL/TLS certificate (Let's Encrypt recommended)
+- MUST implement automated daily backups (encrypted, stored off-site)
+- MUST expose health endpoint at `https://<odoo-domain>/web/health`
+- **Cloud Agent**: Draft-only accounting actions (create_invoice, categorize_expense)
+- **Local Agent**: Approval + posting of invoices/payments (record_payment, validate_invoice)
+- Backup retention: 30 days minimum, encrypted with AES-256
+
+**P6: A2A Upgrade (Phase 2 - Optional)**:
+- MAY replace file-based handoffs with direct Agent-to-Agent messages
+- MUST use HTTP REST API or WebSocket for real-time communication
+- MUST keep vault as audit record (read-only for A2A messages)
+- MUST maintain backward compatibility with file-based workflow
+- A2A message schema:
+  ```json
+  {
+    "type": "approval_request|status_update|alert",
+    "source": "cloud_agent|local_agent",
+    "correlation_id": "uuid",
+    "payload": { ... },
+    "timestamp": "ISO-8601"
+  }
+  ```
+
+**P7: Platinum Demo (Minimum Passing Gate)**:
+The following end-to-end workflow MUST complete successfully:
+1. Email arrives while Local is offline (Cloud detects, Local disconnected)
+2. Cloud drafts reply (draft-only, no send)
+3. Cloud writes approval file to `/Pending_Approval/email/`
+4. Local returns (user reconnects, vault sync completes)
+5. User approves (moves file to `/Approved/`)
+6. Local executes send via Email MCP/Skill
+7. Local logs action to audit logger
+8. Local moves task to `/Done/`
+
+**Acceptance Criteria**:
+- [ ] All 8 steps complete successfully
+- [ ] Audit log contains full trail (Cloud detect → Local execute)
+- [ ] No secrets synced to Cloud (verified via .gitignore check)
+- [ ] Cloud never accessed WhatsApp session or banking credentials
+- [ ] Vault sync completed without conflicts
+
+### Platinum Tier Directory Structure
+
+```
+vault/
+  ├── Needs_Action/
+  │   ├── email/              # Platinum: Email-specific action files
+  │   ├── whatsapp/           # Platinum: WhatsApp-specific
+  │   ├── social/             # Platinum: Social media-specific
+  │   └── accounting/         # Platinum: Odoo-specific
+  ├── Plans/
+  │   ├── email/
+  │   ├── whatsapp/
+  │   ├── social/
+  │   └── accounting/
+  ├── Pending_Approval/
+  │   ├── email/
+  │   ├── whatsapp/
+  │   ├── social/
+  │   └── accounting/
+  ├── In_Progress/
+  │   ├── cloud/              # Platinum: Cloud agent claim files
+  │   └── local/              # Platinum: Local agent claim files
+  ├── Updates/                # Platinum: Cloud writes status updates here
+  │   ├── email/
+  │   ├── social/
+  │   └── accounting/
+  ├── Signals/                # Platinum: Cloud writes alerts here
+  │   ├── critical/           # Immediate attention required
+  │   └── info/               # Informational updates
+  ├── Drafts/
+  │   ├── emails/             # Platinum: Draft email replies (Cloud)
+  │   ├── social_posts/       # Platinum: Draft posts (Cloud)
+  │   └── invoices/           # Platinum: Draft invoices (Cloud)
+  ├── Done/
+  ├── Logs/
+  ├── Briefings/
+  ├── Templates/
+  ├── Dashboard.md            # Local-only (single-writer rule)
+  └── Company_Handbook.md     # Synced (read-only for Cloud)
+
+cloud/                        # Platinum: Cloud-specific configuration
+  ├── .env.cloud              # Cloud environment (NO secrets)
+  ├── config.yaml             # Cloud agent config
+  └── sync_exclusions.txt     # Files excluded from sync
+
+local/                        # Platinum: Local-specific configuration
+  ├── .env.local              # Local environment (WITH secrets)
+  ├── config.yaml             # Local agent config
+  └── credentials/            # OS credential manager references
+
+scripts/
+  ├── platinum/
+  │   ├── setup-cloud-vm.sh     # Platinum: Cloud VM setup script
+  │   ├── configure-git-sync.sh # Platinum: Git sync configuration
+  │   ├── configure-syncthing.sh # Platinum: Syncthing configuration
+  │   ├── deploy-odoo-cloud.sh  # Platinum: Cloud Odoo deployment
+  │   └── test-platinum-demo.sh # Platinum: Demo validation script
+  └── ...
+
+src/
+  ├── cloud_agent/            # Platinum: Cloud-specific agent
+  │   ├── draft_email_reply.py  # Draft-only email replies
+  │   ├── draft_social_post.py  # Draft-only social posts
+  │   ├── draft_invoice.py      # Draft-only invoices
+  │   └── health_monitor.py     # Cloud health monitoring
+  ├── local_agent/            # Platinum: Local-specific agent
+  │   ├── merge_updates.py      # Merge Cloud updates to Dashboard.md
+  │   ├── execute_send_email.py # Execute email send (has credentials)
+  │   ├── execute_payment.py    # Execute payment (has banking creds)
+  │   └── manage_whatsapp.py    # WhatsApp session (local-only)
+  └── ...
+
+tests/
+  ├── platinum/
+  │   ├── test_cloud_local_split.py    # Work-zone specialization
+  │   ├── test_vault_sync.py           # Git/Syncthing sync
+  │   ├── test_claim_by_move.py        # Double-work prevention
+  │   ├── test_security_boundaries.py  # Secrets never sync
+  │   └── test_platinum_demo.py        # End-to-end demo workflow
+  └── ...
+```
+
+### Platinum Tier Safety Validation Checklist
+
+**Cloud Deployment:**
+- [ ] Cloud VM provisioned (Oracle Cloud Free Tier, AWS EC2, or Google Cloud)
+- [ ] Health monitoring configured (uptime, CPU, memory, disk alerts)
+- [ ] Auto-restart configured (systemd service or PM2 process manager)
+- [ ] Network security hardened (SSH keys only, no password auth, firewall rules)
+- [ ] Health endpoint accessible at `http://<vm-ip>:8000/health`
+- [ ] Resource alerts configured (CPU >80%, Memory >80%, Disk >90%)
+
+**Vault Sync:**
+- [ ] Git remote configured (GitHub/GitLab private repo) OR Syncthing configured
+- [ ] .gitignore excludes: .env, tokens/, sessions/, banking/, credentials/, *.session
+- [ ] Sync frequency: Every 60 seconds (configurable in config.yaml)
+- [ ] Conflict resolution tested (no data loss in 100 sync cycles)
+- [ ] Local-wins rule enforced for Dashboard.md
+
+**Work-Zone Specialization:**
+- [ ] Cloud Agent creates draft emails (verified: no send capability)
+- [ ] Cloud Agent creates draft social posts (verified: no post capability)
+- [ ] Cloud Agent creates draft invoices (verified: no post capability)
+- [ ] Local Agent approves and executes send/post/payment
+- [ ] Claim-by-move prevents double-work (tested with concurrent actions)
+
+**Security Boundaries:**
+- [ ] Cloud has NO access to WhatsApp session (verified via file permissions)
+- [ ] Cloud has NO access to banking credentials (verified via .gitignore)
+- [ ] Cloud has NO access to payment tokens (verified via code audit)
+- [ ] Local stores secrets in OS Credential Manager (verified via config)
+- [ ] Vault sync excludes all secret files (verified via sync log)
+
+**Cloud Odoo:**
+- [ ] Odoo deployed on VM with HTTPS (SSL/TLS certificate valid)
+- [ ] Automated backups configured (daily, encrypted, off-site storage)
+- [ ] Health endpoint accessible (https://<domain>/web/health)
+- [ ] Cloud Agent creates draft invoices only (verified via code audit)
+- [ ] Local Agent approves and posts invoices (verified via integration test)
+
+**Platinum Demo (End-to-End):**
+- [ ] Step 1: Email arrives while Local offline (simulated)
+- [ ] Step 2: Cloud drafts reply (draft file created in /Drafts/emails/)
+- [ ] Step 3: Cloud writes approval file (/Pending_Approval/email/)
+- [ ] Step 4: Local returns (vault sync completes, user notified)
+- [ ] Step 5: User approves (file moved to /Approved/)
+- [ ] Step 6: Local executes send via Email MCP/Skill
+- [ ] Step 7: Local logs action (audit log entry created)
+- [ ] Step 8: Local moves task to /Done/
+
+**Integration Tests:**
+- [ ] Cloud/Local agents operate concurrently without conflicts
+- [ ] Vault sync completes within 60 seconds (measured over 100 syncs)
+- [ ] Claim-by-move prevents double-work (tested with 50 concurrent actions)
+- [ ] Local merges Cloud updates into Dashboard.md every 5 minutes
+- [ ] Security boundaries enforced (attempted secret access blocked and logged)
+
+**Chaos Tests:**
+- [ ] Cloud VM restarts → Local continues operating (verified)
+- [ ] Vault sync fails → Local queues updates, retries after 60 seconds
+- [ ] Network partition → Cloud queues drafts, syncs when restored
+- [ ] Odoo cloud unavailable → Cloud drafts invoices, queues for retry
+
+---
+
+## Emergency Procedures (Platinum Tier Extensions)
+
+- **Cloud VM compromised**: Immediately revoke SSH keys, terminate VM, restore from backup, rotate all credentials
+- **Vault sync corruption**: Restore vault from Local backup (Git history or Syncthing versioning), verify integrity
+- **Cloud Agent runaway**: Local Agent sends STOP signal via `/Signals/critical/STOP_CLOUD`, restart Cloud Agent
+- **Security boundary breach detected**: Immediately halt all Cloud operations, audit all synced files, rotate credentials
+- **Odoo backup failure**: Alert Local Agent, manual backup triggered, investigate backup system
+- **A2A communication failure**: Fallback to file-based handoffs, alert Local Agent, debug A2A channel
+- **Platinum Demo failure**: Rollback to Gold Tier configuration, investigate failure point, re-test
+
+---
+
+## Platinum Tier Governance
+
+**Amendment Requirements**:
+Platinum Tier amendments require:
+1. Cloud VM setup and testing (4 hours)
+2. Vault sync configuration (Git or Syncthing) validation (2 hours)
+3. Security boundary audit (verify no secrets synced) (2 hours)
+4. Platinum Demo end-to-end validation (2 hours)
+5. Chaos testing (Cloud VM failure, sync failure, network partition) (4 hours)
+
+**Version**: 6.0.0 | **Ratified**: 2026-04-02 | **Last Amended**: 2026-04-02 (Platinum Tier preparation)

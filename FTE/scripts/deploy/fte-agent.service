@@ -1,0 +1,42 @@
+[Unit]
+Description=FTE-Agent Cloud Agent
+Documentation=https://github.com/user/fte-agent
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/fte-agent
+
+# Environment
+Environment="PATH=/usr/bin:/usr/local/bin:/home/ubuntu/fte-agent/.venv/bin"
+Environment="PYTHONUNBUFFERED=1"
+EnvironmentFile=-/home/ubuntu/fte-agent/.env
+
+# Execution
+ExecStart=/home/ubuntu/fte-agent/.venv/bin/python -m src.main --mode cloud
+ExecReload=/bin/kill -s HUP $MAINPID
+
+# Restart policy (auto-restart on crash)
+Restart=always
+RestartSec=5
+
+# Resource limits
+MemoryLimit=500M
+CPUQuota=50%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fte-agent
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
